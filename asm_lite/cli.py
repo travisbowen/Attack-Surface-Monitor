@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         description="ASM-lite: discover subdomains, resolve DNS, " "probe HTTP(S), and emit structured JSON outputs.",
     )
     # Root domain to scan (required)
-    p.add_argument("--domain", required=True, help="Root domain to scan (travisbowen.dev)")
+    p.add_argument("--domain", required=True, help="Root domain to scan (e.g., example.com)")
     # Output directory (default: out/)
     p.add_argument("--out", default="out", help="Output directory (default: out)")
     # Max subdomains to discover (default: 200)
