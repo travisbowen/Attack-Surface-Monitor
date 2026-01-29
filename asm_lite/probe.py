@@ -6,9 +6,8 @@ Stub HTTP probing module (temporary).
 Purpose:
 - Validate end-to-end pipeline wiring without networking complexity
 - Ensure CLI, discovery, resolution, and output writing all work
-- Make debugging deterministic
 
-This file will be replaced with the real HTTP probing logic later.
+This file will be replaced with the real HTTP probing logic once other modules are validated.
 """
 
 from typing import Dict, List
