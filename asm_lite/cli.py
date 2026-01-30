@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from asm_lite.discover import discover_subdomains
 from asm_lite.resolve import resolve_hosts
 from asm_lite.probe import probe_http
+from asm_lite.report import write_html_report
 
 
 def utc_now_iso() -> str:
@@ -104,9 +105,19 @@ def main() -> int:
     # HTTP exposure results
     (out_dir / "http.json").write_text(json.dumps(http_findings, indent=2))
 
+    report_path = write_html_report(
+        out_dir=out_dir,
+        domain=domain,
+        assets=assets,
+        http_findings=http_findings,
+        template_dir=Path("templates").resolve(),
+    )
+
     print(f"[OK] Wrote outputs to: {out_dir}")
     print(f" - assets.json: {len(assets)} hosts")
     print(f" - http.json:   {len(http_findings)} findings")
+    print(f" - report.html: {report_path}")
+
     return 0
 
 

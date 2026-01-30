@@ -8,7 +8,7 @@ Goal:
 
 Approach (MVP):
 - Use Certificate Transparency (CT) logs via crt.sh to passively enumerate subdomains.
-CT is a strong signal for externally-facing hostnames because public TLS certificates
+CT is a strong signal for externally-facing hostname because public TLS certificates
 often include the DNS names being used in production.
 
 Constraints / tradeoffs:
