@@ -16,6 +16,7 @@ from asm_lite.discover import discover_subdomains
 from asm_lite.resolve import resolve_hosts
 from asm_lite.probe import probe_http
 from asm_lite.report import write_html_report
+from asm_lite.score import score_http_findings
 
 
 def utc_now_iso() -> str:
@@ -92,6 +93,9 @@ def main() -> int:
     # Actively probe standard web endpoints to understand exposure.
     # No exploitation — metadata only.
     http_findings = probe_http(assets, timeout=args.timeout)
+    # JSON and HTML report scoring with highest ranked first.
+    http_findings = score_http_findings(http_findings)
+
 
     # -----------------------------
     # 4) Persist outputs

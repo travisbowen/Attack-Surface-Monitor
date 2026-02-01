@@ -10,64 +10,99 @@
       .meta { color: #444; margin-bottom: 18px; }
       table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-      th { background: #f5f5f5; text-align: left; }
+      th { background: #f5f5f5; text-align: left; position: sticky; top: 0; }
       .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
       .muted { color: #666; }
       .error { color: #a00; }
+      .nowrap { white-space: nowrap; }
+      ul.reasons { margin: 0; padding-left: 18px; }
+      ul.reasons li { margin: 0; }
+      .section { margin-top: 24px; }
+      .small { font-size: 12px; }
     </style>
   </head>
+
   <body>
     <h1>Attack Surface Monitor</h1>
+
     <div class="meta">
       <div><b>Domain:</b> <span class="mono">{{ domain }}</span></div>
       <div><b>Assets:</b> {{ assets | length }} hosts</div>
       <div><b>HTTP Findings:</b> {{ http_findings | length }} attempted URLs</div>
+      <div class="small muted">
+        Note: Findings are generated for analysis and defensive improvement.
+      </div>
     </div>
 
-    <h2>Assets</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Host</th>
-          <th>IPs</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for a in assets %}
-        <tr>
-          <td class="mono">{{ a.host }}</td>
-          <td class="mono muted">{{ a.ips | join(", ") }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="section">
+      <h2>Assets</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Host</th>
+            <th>IPs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in assets %}
+          <tr>
+            <td class="mono">{{ a.host }}</td>
+            <td class="mono muted">{{ a.ips | join(", ") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-    <h2 style="margin-top: 24px;">HTTP Probing</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>URL</th>
-          <th>Status</th>
-          <th>Final URL</th>
-          <th>Title</th>
-          <th>Server</th>
-          <th>TLS notAfter</th>
-          <th>Error</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for f in http_findings %}
-        <tr>
-          <td class="mono">{{ f.url }}</td>
-          <td>{{ f.status_code if f.status_code is not none else "" }}</td>
-          <td class="mono muted">{{ f.final_url or "" }}</td>
-          <td>{{ f.title or "" }}</td>
-          <td class="mono muted">{{ f.server or "" }}</td>
-          <td class="mono muted">{{ f.tls_not_after or "" }}</td>
-          <td class="error">{{ f.error or "" }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="section">
+      <h2>HTTP Probing</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th class="nowrap">Status</th>
+            <th class="nowrap">Risk</th>
+            <th>Reasons</th>
+            <th>Final URL</th>
+            <th>Title</th>
+            <th>Server</th>
+            <th class="nowrap">TLS notAfter</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for f in http_findings %}
+          <tr>
+            <td class="mono">{{ f.url }}</td>
+
+            <td class="nowrap">
+              {{ f.status_code if f.status_code is not none else "" }}
+            </td>
+
+            <td class="nowrap mono">
+              {{ f.risk_score if f.risk_score is not none else "" }}
+            </td>
+
+            <td>
+              {% if f.reasons %}
+                <ul class="reasons">
+                  {% for r in f.reasons %}
+                    <li>{{ r }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+
+            <td class="mono muted">{{ f.final_url or "" }}</td>
+            <td>{{ f.title or "" }}</td>
+            <td class="mono muted">{{ f.server or "" }}</td>
+            <td class="mono muted nowrap">{{ f.tls_not_after or "" }}</td>
+            <td class="error">{{ f.error or "" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>
