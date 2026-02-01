@@ -17,6 +17,7 @@ from asm_lite.resolve import resolve_hosts
 from asm_lite.probe import probe_http
 from asm_lite.report import write_html_report
 from asm_lite.score import score_http_findings
+from asm_lite.intent import annotate_http_findings
 
 
 def utc_now_iso() -> str:
@@ -93,9 +94,12 @@ def main() -> int:
     # Actively probe standard web endpoints to understand exposure.
     # No exploitation — metadata only.
     http_findings = probe_http(assets, timeout=args.timeout)
-    # JSON and HTML report scoring with highest ranked first.
-    http_findings = score_http_findings(http_findings)
 
+    # Intent inference: classify surfaces + flag potential exposure mismatches
+    http_findings = annotate_http_findings(http_findings)
+
+    # Risk scoring: numeric prioritization + reasons (sorted highest first)
+    http_findings = score_http_findings(http_findings)
 
     # -----------------------------
     # 4) Persist outputs

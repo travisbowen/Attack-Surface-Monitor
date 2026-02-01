@@ -22,7 +22,7 @@
     </style>
   </head>
 
-  <body>
+    <body>
     <h1>Attack Surface Monitor</h1>
 
     <div class="meta">
@@ -33,7 +33,7 @@
         Note: Findings are generated for analysis and defensive improvement.
       </div>
     </div>
-    
+
     {# ===================== #}
     {# Top Risks Summary     #}
     {# ===================== #}
@@ -51,6 +51,8 @@
           <th>Risk</th>
           <th>URL</th>
           <th>Status</th>
+          <th>Intent</th>
+          <th>Mismatch</th>
           <th>Summary</th>
         </tr>
       </thead>
@@ -64,6 +66,8 @@
           <td>
             {{ f.status_code if f.status_code is not none else "" }}
           </td>
+          <td>{{ f.intent or "" }}</td>
+          <td>{% if f.exposure_mismatch %}<b>YES</b>{% endif %}</td>
           <td>
             {% if f.reasons %}
               {{ f.reasons[0] }}
@@ -117,6 +121,8 @@
           <th>Status</th>
           <th>Risk</th>
           <th>Reasons</th>
+          <th>Intent</th>
+          <th>Mismatch</th>
           <th>Final URL</th>
           <th>Title</th>
           <th>Server</th>
@@ -128,21 +134,49 @@
         {% for f in http_findings %}
         <tr>
           <td class="mono">{{ f.url }}</td>
+
           <td>
             {{ f.status_code if f.status_code is not none else "" }}
           </td>
+
           <td class="mono">
             {{ f.risk_score if f.risk_score is not none else "" }}
           </td>
+
           <td>
             {% if f.reasons %}
-              <ul style="margin: 0; padding-left: 18px;">
+              <ul>
                 {% for r in f.reasons %}
                   <li>{{ r }}</li>
                 {% endfor %}
               </ul>
             {% endif %}
           </td>
+
+          <td>
+            <div><b>{{ f.intent or "" }}</b></div>
+            {% if f.intent_reasons %}
+              <ul>
+                {% for r in f.intent_reasons %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if f.exposure_mismatch %}
+              <div><b>YES</b></div>
+              {% if f.mismatch_reasons %}
+                <ul>
+                  {% for r in f.mismatch_reasons %}
+                    <li>{{ r }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endif %}
+          </td>
+
           <td class="mono muted">{{ f.final_url or "" }}</td>
           <td>{{ f.title or "" }}</td>
           <td class="mono muted">{{ f.server or "" }}</td>
