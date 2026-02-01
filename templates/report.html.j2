@@ -29,80 +29,128 @@
       <div><b>Domain:</b> <span class="mono">{{ domain }}</span></div>
       <div><b>Assets:</b> {{ assets | length }} hosts</div>
       <div><b>HTTP Findings:</b> {{ http_findings | length }} attempted URLs</div>
-      <div class="small muted">
+      <div class="muted">
         Note: Findings are generated for analysis and defensive improvement.
       </div>
     </div>
+    
+    {# ===================== #}
+    {# Top Risks Summary     #}
+    {# ===================== #}
 
-    <div class="section">
-      <h2>Assets</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Host</th>
-            <th>IPs</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for a in assets %}
-          <tr>
-            <td class="mono">{{ a.host }}</td>
-            <td class="mono muted">{{ a.ips | join(", ") }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {% set top_risks = http_findings[:10] %}
 
-    <div class="section">
-      <h2>HTTP Probing</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th class="nowrap">Status</th>
-            <th class="nowrap">Risk</th>
-            <th>Reasons</th>
-            <th>Final URL</th>
-            <th>Title</th>
-            <th>Server</th>
-            <th class="nowrap">TLS notAfter</th>
-            <th>Error</th>
-          </tr>
-        </thead>
+    <h2>Top Risks</h2>
+    <p class="muted">
+      Highest scoring HTTP findings (top {{ top_risks | length }}).
+    </p>
 
-        <tbody>
-          {% for f in http_findings %}
-          <tr>
-            <td class="mono">{{ f.url }}</td>
-
-            <td class="nowrap">
-              {{ f.status_code if f.status_code is not none else "" }}
-            </td>
-
-            <td class="nowrap mono">
-              {{ f.risk_score if f.risk_score is not none else "" }}
-            </td>
-
-            <td>
-              {% if f.reasons %}
-                <ul class="reasons">
-                  {% for r in f.reasons %}
-                    <li>{{ r }}</li>
-                  {% endfor %}
-                </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Risk</th>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in top_risks %}
+        <tr>
+          <td class="mono">
+            {{ f.risk_score if f.risk_score is not none else "" }}
+          </td>
+          <td class="mono">{{ f.url }}</td>
+          <td>
+            {{ f.status_code if f.status_code is not none else "" }}
+          </td>
+          <td>
+            {% if f.reasons %}
+              {{ f.reasons[0] }}
+              {% if f.reasons | length > 1 %}
+                <span class="muted">
+                  (+{{ (f.reasons | length) - 1 }} more)
+                </span>
               {% endif %}
-            </td>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-            <td class="mono muted">{{ f.final_url or "" }}</td>
-            <td>{{ f.title or "" }}</td>
-            <td class="mono muted">{{ f.server or "" }}</td>
-            <td class="mono muted nowrap">{{ f.tls_not_after or "" }}</td>
-            <td class="error">{{ f.error or "" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {# ===================== #}
+    {# Asset Inventory       #}
+    {# ===================== #}
+
+    <h2>Assets</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Host</th>
+          <th>IPs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in assets %}
+        <tr>
+          <td class="mono">{{ a.host }}</td>
+          <td class="mono muted">
+            {{ a.ips | join(", ") }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {# ===================== #}
+    {# HTTP Probing Details  #}
+    {# ===================== #}
+
+    <h2>HTTP Probing</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Risk</th>
+          <th>Reasons</th>
+          <th>Final URL</th>
+          <th>Title</th>
+          <th>Server</th>
+          <th>TLS notAfter</th>
+          <th>Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in http_findings %}
+        <tr>
+          <td class="mono">{{ f.url }}</td>
+          <td>
+            {{ f.status_code if f.status_code is not none else "" }}
+          </td>
+          <td class="mono">
+            {{ f.risk_score if f.risk_score is not none else "" }}
+          </td>
+          <td>
+            {% if f.reasons %}
+              <ul style="margin: 0; padding-left: 18px;">
+                {% for r in f.reasons %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+          <td class="mono muted">{{ f.final_url or "" }}</td>
+          <td>{{ f.title or "" }}</td>
+          <td class="mono muted">{{ f.server or "" }}</td>
+          <td class="mono muted">{{ f.tls_not_after or "" }}</td>
+          <td class="error">{{ f.error or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </body>
 </html>
