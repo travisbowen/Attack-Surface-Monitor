@@ -19,6 +19,11 @@ from asm_lite.patterns import (
 )
 
 
+# Maximum raw total: error (5), HTTP (10), redirect (5), admin surface (35),
+# common webserver (2), auth wall (12), and internal hostname (20).
+MAX_RAW_SCORE = 89
+
+
 def score_http_finding(finding: Dict) -> Dict:
     """
     Score a single HTTP probe finding.
@@ -28,7 +33,7 @@ def score_http_finding(finding: Dict) -> Dict:
 
     Output:
         Adds:
-        risk_score: int [0..100]
+        risk_score: int [0..100], normalized from the raw 0..89 point total
         reasons: list[str]
         tags: list[str]  (optional, useful later)
     """
@@ -101,8 +106,8 @@ def score_http_finding(finding: Dict) -> Dict:
         reasons.append("Hostname suggests internal/non-prod naming (potential exposure mismatch)")
         tags.append("internal-looking")
 
-    # Clamp to 0..100
-    score = max(0, min(100, int(score)))
+    # Normalize the achievable raw range onto the documented public scale.
+    score = max(0, min(100, round(score * 100 / MAX_RAW_SCORE)))
 
     enriched = dict(finding)
     enriched["risk_score"] = score
