@@ -8,41 +8,15 @@ Goal:
 - Flag potential exposure mismatches based on hostname/title/URL patterns.
 """
 
-import re
 from typing import Dict, List, Tuple
 
-
-# High-signal keywords that suggest an administrative/auth surface
-_ADMIN_KEYWORDS: Tuple[str, ...] = (
-    "admin",
-    "administrator",
-    "login",
-    "sign in",
-    "dashboard",
-    "console",
-    "management",
-    "grafana",
-    "kibana",
-    "jenkins",
-    "prometheus",
-    "portainer",
-    "gitlab",
-    "jira",
+from asm_lite.patterns import (
+    ADMIN_KEYWORDS,
+    contains_any,
+    extract_host,
+    looks_internal_hostname,
 )
 
-# Hostname patterns that often imply "internal-only" naming conventions
-_INTERNAL_HOST_PATTERNS: Tuple[str, ...] = (
-    r"\binternal\b",
-    r"\bintra\b",
-    r"\bcorp\b",
-    r"\bprivate\b",
-    r"\bstage\b",
-    r"\bstaging\b",
-    r"\bdev\b",
-    r"\btest\b",
-    r"\bnonprod\b",
-    r"\buat\b",
-)
 
 # URL path hints that frequently correlate with admin tooling
 _ADMIN_PATH_HINTS: Tuple[str, ...] = (
@@ -56,24 +30,6 @@ _ADMIN_PATH_HINTS: Tuple[str, ...] = (
     "/kibana",
     "/jenkins",
 )
-
-
-def _contains_any(text: str, keywords: Tuple[str, ...]) -> bool:
-    t = (text or "").lower()
-    return any(k in t for k in keywords)
-
-
-def _looks_internal_hostname(host: str) -> bool:
-    h = (host or "").lower()
-    return any(re.search(pat, h) for pat in _INTERNAL_HOST_PATTERNS)
-
-
-def _extract_host(url: str) -> str:
-    # Best-effort parse without adding dependencies
-    try:
-        return url.split("://", 1)[1].split("/", 1)[0].split(":", 1)[0].lower()
-    except Exception:
-        return ""
 
 
 def infer_intent_for_finding(finding: Dict) -> Dict:
@@ -100,7 +56,7 @@ def infer_intent_for_finding(finding: Dict) -> Dict:
     status = finding.get("status_code")
     error = finding.get("error")
 
-    host = _extract_host(url)
+    host = extract_host(url)
     final_lower = (final_url or "").lower()
     title_lower = (title or "").lower()
 
@@ -108,15 +64,15 @@ def infer_intent_for_finding(finding: Dict) -> Dict:
     intent_reasons: List[str] = []
 
     # Primary classification: internal-looking hostname
-    if host and _looks_internal_hostname(host):
+    if host and looks_internal_hostname(host):
         intent = "internal-looking"
         intent_reasons.append("Hostname pattern suggests internal/non-prod naming")
 
     # Admin signals from title, URL, final URL, and common paths
     admin_signal = (
-        _contains_any(title_lower, _ADMIN_KEYWORDS)
-        or _contains_any(url.lower(), _ADMIN_KEYWORDS)
-        or _contains_any(final_lower, _ADMIN_KEYWORDS)
+        contains_any(title_lower, ADMIN_KEYWORDS)
+        or contains_any(url.lower(), ADMIN_KEYWORDS)
+        or contains_any(final_lower, ADMIN_KEYWORDS)
         or any(p in url.lower() for p in _ADMIN_PATH_HINTS)
         or any(p in final_lower for p in _ADMIN_PATH_HINTS)
     )

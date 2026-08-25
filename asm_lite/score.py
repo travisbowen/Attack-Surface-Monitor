@@ -9,50 +9,14 @@ Design goals:
 - Produces both a numeric score and human-readable reasons
 """
 
-import re
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
-
-# High-signal keywords that often indicate administrative surfaces
-_ADMIN_KEYWORDS = (
-    "admin",
-    "administrator",
-    "login",
-    "sign in",
-    "dashboard",
-    "console",
-    "management",
-    "grafana",
-    "kibana",
-    "jenkins",
-    "prometheus",
-    "portainer",
-    "gitlab",
-    "jira",
+from asm_lite.patterns import (
+    ADMIN_KEYWORDS,
+    contains_any,
+    extract_host,
+    looks_internal_hostname,
 )
-
-# Hostname patterns that often imply "internal-only" naming conventions
-_INTERNAL_HOST_PATTERNS = (
-    r"\binternal\b",
-    r"\bintra\b",
-    r"\bcorp\b",
-    r"\bprivate\b",
-    r"\bstage\b",
-    r"\bstaging\b",
-    r"\bdev\b",
-    r"\btest\b",
-    r"\bnonprod\b",
-)
-
-
-def _contains_any(text: str, keywords: Tuple[str, ...]) -> bool:
-    t = (text or "").lower()
-    return any(k in t for k in keywords)
-
-
-def _looks_internal_hostname(host: str) -> bool:
-    h = (host or "").lower()
-    return any(re.search(pat, h) for pat in _INTERNAL_HOST_PATTERNS)
 
 
 def score_http_finding(finding: Dict) -> Dict:
@@ -105,13 +69,13 @@ def score_http_finding(finding: Dict) -> Dict:
         tags.append("redirect")
 
     # High-signal titles/headers
-    if _contains_any(title, _ADMIN_KEYWORDS) or _contains_any(final_url, _ADMIN_KEYWORDS):
+    if contains_any(title, ADMIN_KEYWORDS) or contains_any(final_url, ADMIN_KEYWORDS):
         score += 35
         reasons.append("Admin/auth surface indicated by title or URL patterns")
         tags.append("admin-surface")
 
     # Server header can hint at exposed management stacks
-    if _contains_any(server, ("nginx", "apache", "iis")):
+    if contains_any(server, ("nginx", "apache", "iis")):
         score += 2
         tags.append("common-webserver")
 
@@ -130,13 +94,9 @@ def score_http_finding(finding: Dict) -> Dict:
             tags.append("server-error")
 
     # If hostname looks internal/staging/dev, raise priority because exposure is often accidental.
-    host = ""
-    try:
-        host = url.split("://", 1)[1].split("/", 1)[0].split(":", 1)[0]
-    except Exception:
-        host = ""
+    host = extract_host(url)
 
-    if host and _looks_internal_hostname(host):
+    if host and looks_internal_hostname(host):
         score += 20
         reasons.append("Hostname suggests internal/non-prod naming (potential exposure mismatch)")
         tags.append("internal-looking")

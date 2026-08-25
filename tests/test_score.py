@@ -84,6 +84,20 @@ def test_admin_surface_on_internal_hostname_accumulates_every_signal():
     assert len(result["reasons"]) == 4
 
 
+def test_uat_hostname_gets_internal_naming_risk_points():
+    # reachable (+5), uat host (+20)
+    finding = {
+        "url": "https://uat.example.com",
+        "status_code": 200,
+        "tls_not_after": "Jan  1 00:00:00 2030 GMT",
+    }
+
+    result = score_http_finding(finding)
+
+    assert result["risk_score"] == 25
+    assert "internal-looking" in result["tags"]
+
+
 def test_request_error_still_produces_a_triageable_score():
     finding = {
         "url": "https://dead.example.com",
