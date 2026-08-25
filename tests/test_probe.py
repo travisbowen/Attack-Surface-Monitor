@@ -7,6 +7,8 @@ httpx MockTransport plus a stubbed TLS lookup, so the async plumbing and the
 leaving the machine.
 """
 
+import threading
+
 import httpx
 import pytest
 
@@ -160,3 +162,32 @@ def test_probe_of_an_empty_asset_list_is_a_no_op(mock_http):
     mock_http(lambda request: httpx.Response(200))
 
     assert probe_http([], timeout=1.0) == []
+
+
+def test_tls_expiry_lookups_overlap(mock_http, monkeypatch):
+    barrier = threading.Barrier(2, timeout=1.0)
+
+    def overlapping_tls_lookup(host, port=443):
+        barrier.wait()
+        return f"expiry:{host}"
+
+    mock_http(lambda request: httpx.Response(200))
+    monkeypatch.setattr(probe, "_get_tls_expiry", overlapping_tls_lookup)
+
+    findings = probe_http(
+        [
+            {"host": "one.example.com", "ips": ["192.0.2.1"]},
+            {"host": "two.example.com", "ips": ["192.0.2.2"]},
+        ],
+        timeout=1.0,
+    )
+
+    tls_by_url = {
+        finding["url"]: finding["tls_not_after"]
+        for finding in findings
+        if finding["url"].startswith("https://")
+    }
+    assert tls_by_url == {
+        "https://one.example.com": "expiry:one.example.com",
+        "https://two.example.com": "expiry:two.example.com",
+    }

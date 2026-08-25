@@ -118,7 +118,10 @@ async def _fetch(client: httpx.AsyncClient, url: str) -> Dict:
         if url.startswith("https://"):
             final_host = resp.url.host or ""
             if final_host:
-                result["tls_not_after"] = _get_tls_expiry(final_host, 443)
+                loop = asyncio.get_running_loop()
+                result["tls_not_after"] = await loop.run_in_executor(
+                    None, _get_tls_expiry, final_host, 443
+                )
 
     except Exception as e:
         result["error"] = f"{type(e).__name__}: {e}"
