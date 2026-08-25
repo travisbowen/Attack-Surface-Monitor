@@ -40,8 +40,9 @@ def resolve_hosts(hostnames: List[str]) -> List[Dict]:
             for info in infos:
                 ip = info[4][0]
                 ips.add(ip)
-        except socket.gaierror:
-            # Host did not resolve — keep empty list so pipeline continues
+        except (OSError, UnicodeError):
+            # Host did not resolve or could not be encoded — keep empty list
+            # so the pipeline continues and retains the asset for later scans.
             pass
 
         results.append({"host": host, "ips": sorted(ips)})
