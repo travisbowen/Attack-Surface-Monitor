@@ -34,9 +34,20 @@ def write_html_report(
     Returns:
         Path to the generated report.html
     """
+    # select_autoescape() matches on the template's file EXTENSION. Templates
+    # here are named "report.html.j2", which ends in ".j2" -- so the previous
+    # select_autoescape(["html", "xml"]) matched nothing and autoescaping was
+    # silently disabled.
+    #
+    # That mattered: every string in this report is attacker-influenced.
+    # Hostnames come from public certificate transparency logs, and titles and
+    # Server headers come from the hosts being probed. Rendering them unescaped
+    # puts stored XSS in the report the operator opens in their own browser.
     env = Environment(
         loader=FileSystemLoader(str(template_dir)),
-        autoescape=select_autoescape(["html", "xml"]),
+        autoescape=select_autoescape(
+            enabled_extensions=("html", "xml", "html.j2", "xml.j2"),
+        ),
     )
     report_tmpl = env.get_template("report.html.j2")
 

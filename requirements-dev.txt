@@ -1,0 +1,5 @@
+# Development dependencies. Installing this also installs the runtime deps.
+
+-r requirements.txt
+
+pytest>=8.0

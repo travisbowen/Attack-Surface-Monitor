@@ -20,6 +20,12 @@ from asm_lite.score import score_http_findings
 from asm_lite.intent import annotate_http_findings
 
 
+# Resolved from this file's location, not the current working directory, so the
+# CLI works when invoked from anywhere. A relative Path("templates") only
+# resolved correctly when the process happened to start in the repo root.
+_TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
+
+
 def utc_now_iso() -> str:
     """
     Return the current UTC timestamp in ISO-8601 format.
@@ -118,7 +124,7 @@ def main() -> int:
         domain=domain,
         assets=assets,
         http_findings=http_findings,
-        template_dir=Path("templates").resolve(),
+        template_dir=_TEMPLATE_DIR,
     )
 
     print(f"[OK] Wrote outputs to: {out_dir}")
