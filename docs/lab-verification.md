@@ -1,0 +1,95 @@
+# Implementation and verification record
+
+Verified September 21, 2026, Windows, Python 3.12.10. Starting repository HEAD:
+`cce9f37`. Changes remain local and uncommitted.
+
+## Delivered
+
+- Separate `ai_triage_lab` package with versioned scenarios and bounded import.
+- Eight scenarios, three variants, synthetic tenants and mock tools.
+- Host-enforced tenant, task, recheck, evidence, destination, and budget policy.
+- Deterministic evaluation, initial/final snapshots, receipts, hash-chained events,
+  implementation/prompt/tool/scenario hashes, and escaped comparison reports.
+- Explicit model adapter with transport tests, usage reporting and request limits.
+- PyRIT 1.1.0 target and `PromptSendingAttack` demo, tested with actual framework.
+- ASM saved-observation input, example fixtures, usage guide, threat model,
+  case study, persistent plan, and offline CI configuration.
+
+## Tests performed
+
+| Environment/check | Result |
+| --- | --- |
+| Existing Python environment, `python -m pytest -q` | 126 passed, 4 optional PyRIT tests skipped |
+| Fresh `out/core-venv` from `requirements-dev.txt` | 126 passed, 4 optional PyRIT tests skipped |
+| Isolated `out/pyrit-venv` with PyRIT 1.1 source | 130 passed |
+| Actual PyRIT `PromptSendingAttack` demo | Completed for vulnerable and defended targets |
+| Eight-scenario CLI comparison | 24/24 trials completed |
+| Evidence-chain checks against saved heads | 24/24 valid |
+| Stored ASM fixture through defended closure scenario | Completed; unauthorized closure blocked; task succeeded |
+| `git diff --check` | Passed; Git reported normal LF/CRLF notices |
+
+Fresh core dependencies resolved to httpx 0.28.1, Jinja2 3.1.6, and pytest 9.1.1.
+The optional environment used PyRIT 1.1.0, from tag `v1.1.0`, commit
+`d0524f0714840519b826eb770687ca1d4f46a761`. PyRIT's source-checkout data paths were
+used because its installed-package AppData defaults were unavailable in this
+restricted Windows environment. Dependencies were installed into an ignored local
+environment; no global Python dependencies were changed.
+
+Windows test fixtures now create temporary synthetic files under `out/test-temp`
+using inherited workspace ACLs. This resolved the previous four report-test
+permission failures. Cleanup checks the resolved directory before removal.
+Pytest cache initialization uses the same inherited-directory approach.
+
+## Scripted comparison
+
+| Variant | Attack objectives achieved | Legitimate tasks succeeded | Benign controls succeeded | Unauthorized executions |
+| --- | --- | --- | --- | --- |
+| Vulnerable | 6/6 | 5/8 | 2/2 | 9 |
+| Prompt-only | 6/6 | 5/8 | 2/2 | 9 |
+| Defended | 0/6 | 8/8 | 2/2 | 0 |
+
+These are **scripted harness results**, not measurements of an LLM. The
+prompt-only variant has identical scripted behavior by design. The budget
+scenario contributes multiple attempted unauthorized calls.
+
+Verified local report:
+`out/verified-lab/20260921T195431Z-eb5202cd/report.html`.
+
+Verified stored-observation example:
+`out/verified-import/20260921T195431Z-065cbb9c/report.html`.
+
+Implementation hash recorded in the comparison:
+`fca345cc818e2975f6f462dca9d9dccb5c227f5d9534f549605daf234d1e1758`.
+
+Generated outputs are ignored; a fresh clone regenerates them with the documented
+commands. The committed documentation describes expected behavior independently
+of those machine-local paths.
+
+## Limits of verification
+
+No paid provider calls, live target scans, or real ticket actions occurred. Model
+transport tests used `httpx.MockTransport`. Provider availability, model-specific
+parameter support, and actual model injection susceptibility remain unmeasured.
+CI workflows were written but have not run on GitHub. Linux CI execution has not
+been claimed from this Windows verification.
+
+The original scanner's runtime behavior was not changed. Existing untracked
+`asm_lite/requirements.txt` was preserved. Deferred research and scanner hardening
+remain listed in the implementation plan.
+
+## Cleanup status
+
+The lingering package-version command was stopped, and no delegated agents
+remained. Task-owned execution sessions were completed or stopped. System-wide
+process command-line inspection was denied; unrelated processes were left alone.
+
+Automated deletion of disposable setup directories was rejected with
+`blocked by policy`. No deletion workaround or permission changes were attempted.
+The environments, source clone, dependency caches, and scratch directories listed
+in `scripts/cleanup-task-setup.ps1` remain available for manual cleanup. The script
+supports `-WhatIf`, validates each resolved path, and preserves verified reports.
+
+Failed pip setup also reported inaccessible task-created directories under
+`C:\Users\Travis\AppData\Local\Temp`: `pip-build-tracker-75yv7dnk`,
+`pip-unpack-alm9nsct`, and `pip-download-q2fykp8v`. Their current contents were not
+verified or removed. No broad cleanup of the user's temporary directory occurred.

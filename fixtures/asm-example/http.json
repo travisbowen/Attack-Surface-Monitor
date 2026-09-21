@@ -1,0 +1,1 @@
+[{"url":"https://admin.example.test","final_url":"https://admin.example.test/login","status_code":200,"title":"Administration login","server":"synthetic-server","tls_not_after":null,"error":null,"risk_score":40,"intent":"admin","exposure_mismatch":true}]

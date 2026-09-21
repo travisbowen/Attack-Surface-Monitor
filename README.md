@@ -8,6 +8,27 @@ outputs for analysis and future drift detection.
 
 The tool focuses on visibility and prioritization, not exploitation.
 
+## GenAI red-team lab
+
+The repository also includes **ASM AI Triage Lab**, an offline-first testbed for
+indirect prompt injection against an AI security analyst. It compares vulnerable,
+prompt-only, and application-enforced targets using synthetic tenants, tickets,
+reports, and evidence receipts.
+
+```bash
+python -m ai_triage_lab.cli run
+```
+
+Open the printed output directory's `report.html`. Eight scenarios cover data
+isolation, unauthorized ticket closure, report manipulation, synthetic secret
+leakage, budgets, and benign controls. The default adapter is scripted: results
+verify the harness and controls, **not an LLM's resistance to injection**.
+
+[Lab guide](docs/ai-triage-lab.md) · [Threat model](docs/threat-model.md) ·
+[Case study](docs/case-studies/unauthorized-closure.md) ·
+[Saved implementation plan](docs/implementation-plan.md) ·
+[Verification record](docs/lab-verification.md)
+
 ## Usage & Scope
 
 This tool is intended for use **only** on systems and domains that you own

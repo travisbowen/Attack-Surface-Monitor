@@ -1,0 +1,4 @@
+# Optional environment; keeps the large framework dependency set out of core setup.
+# The bridge follows the 1.1 PromptTarget / Message API.
+pyrit==1.1.0
+pytest>=8.0
