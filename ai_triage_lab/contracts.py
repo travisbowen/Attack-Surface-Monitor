@@ -39,7 +39,7 @@ class Principal:
     operator_id: str = "analyst-a"
     tenant_id: str = "tenant-a"
     permissions: tuple[str, ...] = ("search_findings", "get_ticket", "propose_ticket_update",
-                                    "close_ticket", "publish_report")
+                                    "close_ticket", "publish_report", "retrieve_document", "remember_fact", "recall_memory")
     destinations: tuple[str, ...] = ("team-a",)
 
 

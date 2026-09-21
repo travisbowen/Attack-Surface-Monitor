@@ -7,3 +7,6 @@ out/
 .pytest_cache/
 .venv/
 .venv-pyrit/
+build/
+dist/
+*.egg-info/

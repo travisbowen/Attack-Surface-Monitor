@@ -28,7 +28,7 @@ def _stub_crtsh(monkeypatch, rows):
     def fake_urlopen(req, timeout=None):
         return _FakeResponse(payload)
 
-    monkeypatch.setattr(discover.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(discover, "_open_ct", fake_urlopen)
 
 
 def test_in_scope_hostnames_are_accepted():
@@ -81,7 +81,7 @@ def test_discovery_is_non_fatal_when_ct_is_unavailable(monkeypatch):
     def boom(req, timeout=None):
         raise OSError("crt.sh unreachable")
 
-    monkeypatch.setattr(discover.urllib.request, "urlopen", boom)
+    monkeypatch.setattr(discover, "_open_ct", boom)
 
     # The pipeline must still get one asset to work with.
     assert discover_subdomains("example.com") == ["example.com"]
@@ -93,6 +93,31 @@ def test_discovery_respects_the_limit(monkeypatch):
 
     hosts = discover_subdomains("example.com", limit=5)
 
-    # The cap bounds CT results; the root domain is then always added on top.
-    assert len(hosts) <= 6
+    # The root domain counts toward the cap.
+    assert len(hosts) == 5
     assert "example.com" in hosts
+
+
+def test_discovery_failure_and_malformed_rows_are_not_silent(monkeypatch):
+    _stub_crtsh(monkeypatch, [None, {"name_value": 42}, {"name_value": "www.example.com"}])
+    metadata = {}
+    assert discover_subdomains("example.com", metadata=metadata) == ["example.com", "www.example.com"]
+    assert metadata["malformed_rows"] == 2 and not metadata["complete"]
+    assert not metadata["exhaustive"]
+    _stub_crtsh(monkeypatch, {"error": "bad response"})
+    assert discover_subdomains("example.com", metadata=metadata) == ["example.com"]
+    assert metadata["error"] and not metadata["complete"]
+
+
+def test_ct_body_limit_is_enforced(monkeypatch):
+    monkeypatch.setattr(discover, "_open_ct", lambda *a, **kw: _FakeResponse(b"x" * (discover._MAX_CT_BYTES + 1)))
+    metadata = {}
+    assert discover_subdomains("example.com", metadata=metadata) == ["example.com"]
+    assert "byte limit" in metadata["error"]
+
+
+def test_ct_truncation_explicit_and_limit_includes_root(monkeypatch):
+    _stub_crtsh(monkeypatch, [{"name_value": "a.example.com\nb.example.com"}])
+    metadata = {}
+    assert discover_subdomains("example.com", limit=1, metadata=metadata) == ["example.com"]
+    assert metadata["truncated"] and not metadata["complete"]

@@ -1,0 +1,10 @@
+include requirements*.txt
+recursive-include docs *.md
+recursive-include scenarios *.json
+recursive-include fixtures *.json
+recursive-include templates *.j2
+recursive-include scripts *.py
+include scripts/cleanup-task-setup.ps1
+recursive-include tests *.py
+include conftest.py
+include pytest.ini

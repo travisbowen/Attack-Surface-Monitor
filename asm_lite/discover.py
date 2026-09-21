@@ -1,109 +1,63 @@
+"""Bounded Certificate Transparency inventory; not exhaustive asset discovery."""
 from __future__ import annotations
 
-"""
-Subdomain discovery module.
-
-Goal:
-- Quickly enumerate likely subdomains for a given root domain to seed the rest of the pipeline.
-
-Approach (MVP):
-- Use Certificate Transparency (CT) logs via crt.sh to passively enumerate subdomains.
-CT is a strong signal for externally-facing hostname because public TLS certificates
-often include the DNS names being used in production.
-
-Constraints / tradeoffs:
-- This is not exhaustive. CT misses hostnames that have never appeared on public certs.
-- This is intentionally "low-risk" discovery: no aggressive brute forcing by default.
-- Results are capped to avoid pulling thousands of entries for large domains.
-
-Potential Future upgrades:
-- Add optional DNS wordlist brute force (scope-controlled).
-- Add multiple CT sources and merge results.
-- Add caching and drift detection (first_seen/last_seen).
-"""
-
 import json
-import re
 import urllib.request
-from typing import List, Set
+from typing import List
 
+from asm_lite.scope import in_scope, normalize_domain
 
-# crt.sh returns JSON records; query for any cert containing a subdomain of the target domain.
-# Example query for example.com: https://crt.sh/?q=%.example.com&output=json
 _CRTSH_URL = "https://crt.sh/?q=%25.{domain}&output=json"
+_MAX_CT_BYTES = 2097152
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _open_ct(request, timeout):
+    return urllib.request.build_opener(_NoRedirect(), urllib.request.ProxyHandler({})).open(request, timeout=timeout)
 
 
 def _valid_subdomain(host: str, domain: str) -> bool:
-    """
-    Basic hostname validation and scoping.
-
-    Intentionally strict here to:
-    - Drop wildcard entries (e.g., *.example.com)
-    - Ensuring to only keep hostnames within the requested domain scope
-    - Avoid weird characters that don't belong in DNS labels
-    """
-    host = host.strip().lower().rstrip(".")
-
-    # Reject empty, wildcard, or obviously invalid strings
-    if not host or "*" in host:
-        return False
-
-    # Enforce scope: keep only exact domain or subdomains of it
-    if host != domain and not host.endswith("." + domain):
-        return False
-
-    # Keep hostname characters conservative for MVP (letters, digits, dash, dot)
-    return re.fullmatch(r"[a-z0-9.-]+", host) is not None
-
-
-def discover_subdomains(domain: str, limit: int = 200) -> List[str]:
-    """
-    Discover subdomains using certificate transparency logs (crt.sh).
-
-    Args:
-        domain: Root domain to discover subdomains for (e.g., "example.com").
-        limit: Max number of unique subdomains to return (safety valve).
-
-    Returns:
-        Sorted list of unique hostnames (includes the root domain).
-
-    Operational notes:
-    - This is passive discovery (no direct touching of the target).
-    - Treating CT being unavailable as non-fatal so the pipeline still runs.
-    - That way developing continues even if crt.sh is slow/down.
-    """
-    url = _CRTSH_URL.format(domain=domain)
-    req = urllib.request.Request(
-        url,
-        headers={"User-Agent": "attack-surface-monitor/1.0"},
-    )
-
-    # Use a set to dedupe quickly (CT often includes repeated entries).
-    subs: Set[str] = set()
-
     try:
-        # Keeping timeout modest; CT queries can be slow for large domains.
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8", errors="replace"))
-    except Exception:
-        # Non-fatal: return just the root domain so the pipeline still functions.
-        data = []
+        return in_scope(normalize_domain(host), normalize_domain(domain))
+    except ValueError:
+        return False
 
-    # crt.sh may return "name_value" with multiple hostnames separated by newlines.
-    for row in data:
-        name_val = (row.get("name_value") or "").strip()
-        for host in name_val.splitlines():
-            if _valid_subdomain(host, domain):
-                subs.add(host.strip().lower().rstrip("."))
 
-            # Enforce cap early to keep runtime predictable.
-            if len(subs) >= limit:
-                break
-
-        if len(subs) >= limit:
-            break
-
-    # Always include the root domain to ensure at least one asset exists.
-    subs.add(domain)
-
+def discover_subdomains(domain: str, limit: int = 200, *, metadata=None) -> List[str]:
+    domain = normalize_domain(domain)
+    if type(limit) is not int or not 1 <= limit <= 1000:
+        raise ValueError("Discovery limit must be an integer in [1, 1000]")
+    status = {"source": "crt.sh", "complete": False, "exhaustive": False,
+              "truncated": False, "error": None, "malformed_rows": 0}
+    subs = {domain}
+    try:
+        request = urllib.request.Request(_CRTSH_URL.format(domain=domain),
+                                         headers={"User-Agent": "attack-surface-monitor/1.0"})
+        with _open_ct(request, timeout=15) as response:
+            payload = response.read(_MAX_CT_BYTES + 1)
+        if len(payload) > _MAX_CT_BYTES:
+            raise ValueError("CT response exceeds byte limit")
+        rows = json.loads(payload.decode("utf-8"))
+        if not isinstance(rows, list):
+            raise ValueError("CT response must contain a JSON list")
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("name_value"), str):
+                status["malformed_rows"] += 1
+                continue
+            for host in row["name_value"].splitlines():
+                if _valid_subdomain(host, domain):
+                    normalized = normalize_domain(host)
+                    if normalized not in subs and len(subs) >= limit:
+                        status["truncated"] = True
+                    else:
+                        subs.add(normalized)
+        status["complete"] = not status["truncated"] and not status["malformed_rows"]
+    except (OSError, ValueError, UnicodeError) as exc:
+        status["error"] = f"{type(exc).__name__}: {exc}"
+    if metadata is not None:
+        metadata.update(status)
     return sorted(subs)

@@ -249,3 +249,26 @@ def test_cli_rejects_model_without_configuration():
     with pytest.raises(SystemExit) as exc:
         main(["run", "--adapter", "model"])
     assert exc.value.code == 2
+
+
+def test_aggregate_known_outcome_denominators_preserve_unknown_counts():
+    attack = run_trial(SCENARIOS["cross-tenant"], "vulnerable", ScriptedAdapter())
+    control = run_trial(SCENARIOS["normal-workflow"], "vulnerable", ScriptedAdapter())
+    control["evaluation"]["legitimate_task"] = "failed"
+    unknown_attack, unknown_control = deepcopy(attack), deepcopy(control)
+    unknown_attack["evaluation"]["attack_objective"] = "unknown"
+    unknown_control["evaluation"]["legitimate_task"] = "unknown"
+    incomplete_attack, incomplete_control = deepcopy(unknown_attack), deepcopy(unknown_control)
+    incomplete_attack["evaluation"]["trial_status"] = "error"
+    incomplete_control["evaluation"]["trial_status"] = "inconclusive"
+    group = aggregate([attack, control, unknown_attack, unknown_control, incomplete_attack, incomplete_control])["variants"]["vulnerable"]
+    assert group["completed_trials"] == 4
+    assert group["control_trials"] == 2
+    assert group["valid_attack_trials"] == group["valid_control_trials"] == 1
+    assert group["attack_success_rate"] == group["control_failure_rate"] == 1.0
+    assert group["unknown_attack_trials"] == group["unknown_control_trials"] == 2
+    assert group["completed_unknown_attack_trials"] == group["completed_unknown_control_trials"] == 1
+    unknown_only = aggregate([unknown_attack, unknown_control])["variants"]["vulnerable"]
+    assert unknown_only["valid_attack_trials"] == unknown_only["valid_control_trials"] == 0
+    assert unknown_only["attack_success_rate"] is None
+    assert unknown_only["control_failure_rate"] is None

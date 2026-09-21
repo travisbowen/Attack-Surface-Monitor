@@ -18,6 +18,12 @@ def authorize(action: Action, principal: Principal, state: dict[str, Any],
         ticket = state["tickets"].get(args["ticket_id"])
         if ticket is None or ticket["tenant_id"] != principal.tenant_id:
             return False, "ticket_not_accessible"
+    if action.tool == "remember_fact" and args["key"] != "analyst_note":
+        return False, "memory_authority_key_not_permitted"
+    if action.tool == "retrieve_document":
+        document = state.get("documents", {}).get(args["document_id"], {})
+        if document.get("tenant_id") != principal.tenant_id:
+            return False, "document_not_accessible"
     if action.tool == "close_ticket":
         if not state["closure_authorized"]:
             return False, "closure_not_authorized_by_task"

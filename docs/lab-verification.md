@@ -1,5 +1,62 @@
 # Implementation and verification record
 
+## Portfolio release 0.2.0 — current status
+
+Five GPT-6 Astra workstreams delivered scanner hardening, advanced attacks,
+model-experiment tooling, offline dashboard, and installable portfolio packaging.
+Root coordinated integration and independent review. Initial MVP is committed as
+`8d9273e`; release changes are committed after the checks recorded here.
+
+Final source regression on Python 3.12.10, Windows:
+
+- Core: **260 passed, 5 optional PyRIT tests skipped**.
+- Actual PyRIT 1.1 environment: **265 passed**.
+- Scanner-focused suite: **106 passed**, including actual httpx/httpcore backend
+  checks of pinned IP, Host, TLS SNI, certificate verification, and scope policy.
+- Built wheel installed outside checkout: three command entrypoints, **48/48
+  completed scripted trials**, **48/48 valid evidence chains**, dashboard comparison,
+  stored-scan import, experiment preflight, and scanner/template orchestration with
+  mocked network all passed. No source-tree imports were needed.
+
+Current preserved artifacts:
+
+- `out/verified-wheel/dashboard/report.html`
+- `out/verified-wheel/wheel-verification.json`
+- `out/verified-wheel/verification.log`
+- `out/verified-wheel/installed-dependencies.txt`
+- `out/release/asm_ai_triage_lab-0.2.0-py3-none-any.whl`
+- `out/release/asm_ai_triage_lab-0.2.0.tar.gz`
+
+The installed wheel's lab trials use the same final runtime code; later changes
+to this record affect documentation only. Wheel resource/version parity is tested.
+CI defines Ubuntu/Windows Python 3.11/3.12 builds and installed-wheel smoke checks;
+GitHub CI execution itself has not been observed in this local task.
+
+Independent review found and fixed two result-integrity bugs: memory controls now
+require later-phase readback of earlier-provenance data; unknown outcomes are
+excluded from appropriate metric denominators and reported separately. Model
+messages also validate all tool schemas before executing any call in that message.
+
+**Live-model research remains pending.** No endpoint/model/budget was supplied.
+Read-only local API probes timed out. Model/PyRIT tests use mocked model transport;
+the 48-trial results are scripted harness evidence, not measured LLM robustness.
+See `docs/model-experiments.md` for the ready-to-run experiment protocol.
+
+Dashboard JavaScript was exercised against generated DOM fixtures in Node.
+Actual browser screenshots were unavailable: Orca returned `runtime_unavailable`.
+No visual-runtime screenshot claim is made.
+
+All agents reported their task processes stopped. Automatic approval review
+rejected cleanup of the new wheel-verification workspace
+`C:\Users\Travis\Desktop\Ai Projects\asm-portfolio-wheel-verification`, project
+`build/`, and `asm_ai_triage_lab.egg-info/`, stating `blocked by policy`.
+Those directories remain. Separate OS access-denied remnants remain at
+`out/release/.tmp-4r2nmcs4` and
+`C:\Users\Travis\AppData\Local\Temp\tmpxs634ay5`. Older cleanup leftovers are
+recorded below. No permission changes or deletion workaround were attempted.
+
+## Initial MVP verification history
+
 Verified September 21, 2026, Windows, Python 3.12.10. Starting repository HEAD:
 `cce9f37`. Changes remain local and uncommitted.
 

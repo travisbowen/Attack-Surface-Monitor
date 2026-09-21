@@ -1,90 +1,86 @@
-# Attack Surface Monitor
+﻿# Attack Surface Monitor + AI Triage Lab
 
-Intent-aware attack surface discovery and HTTP exposure monitoring.
+A Python portfolio project connecting bounded HTTP exposure observations to a
+synthetic GenAI security evaluation lab. The scanner collects evidence; the lab
+tests what happens when an AI analyst consumes attacker-controlled evidence and
+chooses tools with more authority than the content should have.
 
-This project passively discovers subdomains via certificate transparency,
-resolves them to IPs, probes exposed HTTP(S) services, and emits structured
-outputs for analysis and future drift detection.
+**Evidence level:** offline scripted experiments demonstrate harness behavior
+and application controls. They do not measure LLM injection resistance. Repeated
+real-model comparison tooling is implemented; live provider results are pending.
 
-The tool focuses on visibility and prioritization, not exploitation.
+## Install and demonstrate
 
-## GenAI red-team lab
-
-The repository also includes **ASM AI Triage Lab**, an offline-first testbed for
-indirect prompt injection against an AI security analyst. It compares vulnerable,
-prompt-only, and application-enforced targets using synthetic tenants, tickets,
-reports, and evidence receipts.
-
-```bash
-python -m ai_triage_lab.cli run
-```
-
-Open the printed output directory's `report.html`. Eight scenarios cover data
-isolation, unauthorized ticket closure, report manipulation, synthetic secret
-leakage, budgets, and benign controls. The default adapter is scripted: results
-verify the harness and controls, **not an LLM's resistance to injection**.
-
-[Lab guide](docs/ai-triage-lab.md) · [Threat model](docs/threat-model.md) ·
-[Case study](docs/case-studies/unauthorized-closure.md) ·
-[Saved implementation plan](docs/implementation-plan.md) ·
-[Verification record](docs/lab-verification.md)
-
-## Usage & Scope
-
-This tool is intended for use **only** on systems and domains that you own
-or have **explicit authorization** to test.
-
-It performs passive discovery and non-intrusive HTTP probing, but it should
-still be operated within a clearly defined and approved scope.
-
-### Quick Start
+Requires Python 3.11 or later; local release verified with Python 3.12 on Windows.
+From a clone:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-python -m asm_lite.cli --domain example.com --out out
+# Activate: source .venv/bin/activate (POSIX), .venv\Scripts\Activate.ps1 (PowerShell)
+python -m pip install ".[dev]"
+ai-triage-lab run --suite all --out out/demo
+python -m pytest -q
 ```
 
-### Options
+Open the printed run directory's `report.html`. Sixteen scenarios across three
+variants produce 48 trials: eight basic cases and eight advanced campaigns,
+including six benign controls. Every trial starts with fresh synthetic state.
+Campaign phases share a bounded session. No model service or live scan is needed.
+Installed commands also work outside the checkout; fixtures, scenarios, scanner
+templates, and self-contained dashboard assets are included in the wheel.
 
-| Flag | Default | Meaning |
-| --- | --- | --- |
-| `--domain` | required | Root domain to scan |
-| `--out` | `out` | Output directory |
-| `--max-subdomains` | `200` | Cap on discovery results |
-| `--timeout` | `8.0` | Per-request HTTP timeout, seconds |
-
-### Outputs
-
-A run writes four files into the output directory:
-
-| File | Contents |
+| Component | Demonstrates |
 | --- | --- |
-| `meta.json` | Domain and UTC timestamp, so runs can be diffed chronologically |
-| `assets.json` | Hostname inventory, each with its resolved IPs |
-| `http.json` | One record per attempted URL, annotated with intent and risk score, sorted highest risk first |
-| `report.html` | Human-readable report: top risks, asset inventory, per-finding detail |
+| `asm-lite` | Scoped discovery, approved connection/redirect addresses, bounded HTTP collection, explicit errors and vantage/completeness metadata |
+| `ai-triage-lab` | Vulnerable, prompt-only, and application-enforced tool gateways; deterministic receipt/state evaluation; offline evidence dashboard |
+| Advanced campaigns | Trial-local memory, poisoned retrieval and tool descriptions, staged multi-turn manipulation, matched controls |
+| `ai-triage-experiment` | No-network preflight, repeated randomized model comparisons, usage/budget tracking and incomplete-trial denominators |
+| Optional PyRIT 1.1 | Single-prompt `PromptSendingAttack` bridge with the lab's business-effect evaluator |
 
-## Development
+The vulnerable variant is deliberate. Prompt-only equals vulnerable under the
+scripted adapter because scripted actions do not interpret prompts. Defended
+results establish the tested host policy, not universal prompt-injection immunity.
+
+## Scanner usage and boundaries
+
+Only scan domains and systems you own or are explicitly authorized to test.
+The command below is a placeholder: replace it with your authorized domain.
 
 ```bash
-pip install -r requirements-dev.txt
-python -m pytest
+asm-lite --domain YOUR-AUTHORIZED-DOMAIN --out out/scan --vantage operator-network
 ```
 
-The suite is fully offline. Certificate transparency lookups, HTTP probing, and
-TLS certificate reads are all stubbed, so no test sends traffic to any host.
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--domain` | required | Root domain and subdomain scope |
+| `--out` | `out` | Output directory |
+| `--max-subdomains` | `200` | Discovery cap |
+| `--timeout` | `8` | HTTP request timeout, seconds |
+| `--allow-cidr` | none | Repeat to explicitly authorize non-global address ranges |
+| `--max-requests` | `400` | HTTP request budget |
+| `--max-redirects` | `3` | Redirect limit |
+| `--max-response-bytes` | `262144` | Response body cap |
+| `--concurrency` | `10` | Concurrent probe limit |
+| `--requests-per-second` | `5` | Request rate limit |
+| `--max-duration` | `120` | HTTP phase seconds; excludes discovery and system DNS |
+| `--vantage` | `operator-network` | Operator label; does not prove public reachability |
 
-Layout:
+Outputs: `meta.json` (`asm-observation-v2`, limits and completeness), `assets.json`
+(DNS inventory), `http.json` (observations, explicit errors, heuristic scores),
+and escaped `report.html`. Discovery is not exhaustive; one approved IP per host
+is sampled. OS DNS timeouts are outside the HTTP phase deadline. Scores prioritize
+review and are not verified vulnerabilities. Importing saved JSON never scans.
 
-| Module | Responsibility |
-| --- | --- |
-| `asm_lite/discover.py` | Certificate transparency enumeration and scope enforcement |
-| `asm_lite/resolve.py` | Hostname to IP resolution |
-| `asm_lite/probe.py` | HTTP(S) metadata probing |
-| `asm_lite/intent.py` | Surface classification and exposure mismatch flagging |
-| `asm_lite/score.py` | Explainable risk scoring |
-| `asm_lite/report.py` | HTML rendering |
-| `asm_lite/cli.py` | Pipeline orchestration |
+## Portfolio and research
+
+- [Demo walkthrough](docs/portfolio-demo.md): attacks, controls, evidence, and dashboard.
+- [Lab guide](docs/ai-triage-lab.md), [advanced campaigns](docs/advanced-campaigns.md), [threat model](docs/threat-model.md).
+- [Results dashboard](docs/results-dashboard.md): offline filtering and cross-run comparison.
+- [Unauthorized closure case study](docs/case-studies/unauthorized-closure.md) and [memory poisoning case study](docs/case-studies/memory-poisoning.md).
+- [Model experiment protocol](docs/model-experiments.md): configuration and spending boundaries; no live findings claimed.
+- [Local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
+
+Default tests and demos are offline. Dependency installation requires access to
+your package source. Optional PyRIT setup is separate; CI includes core tests,
+wheel installation outside the checkout, and optional integration coverage.
+No package publication, hosted deployment, or hosted multi-user service is included.

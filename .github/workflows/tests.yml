@@ -13,19 +13,42 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.12']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - run: python -m pip install -r requirements-dev.txt
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install ".[dev]"
       - run: python -m pytest -q
-      - run: python -m ai_triage_lab.cli run --out out/ci-lab
+      - run: python -m build --outdir out/release
+      - name: Verify installed wheel outside checkout
+        shell: python {0}
+        run: |
+          import os, pathlib, subprocess, sys, venv
+          repo = pathlib.Path.cwd()
+          work = pathlib.Path(os.environ['RUNNER_TEMP']) / 'installed-wheel'
+          work.mkdir()
+          environment = work / 'venv'
+          venv.EnvBuilder(with_pip=True).create(environment)
+          python = environment / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
+          wheel = next((repo / 'out/release').glob('*.whl'))
+          subprocess.run([str(python), '-m', 'pip', 'install', str(wheel)], check=True)
+          subprocess.run([str(python), '-I', str(repo / 'scripts/verify_installed.py')], cwd=work, check=True)
       - uses: actions/upload-artifact@v4
         with:
-          name: lab-${{ matrix.os }}
-          path: out/ci-lab
+          name: release-${{ matrix.os }}-${{ matrix.python }}
+          path: out/release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installed-evidence-${{ matrix.os }}-${{ matrix.python }}
+          path: |
+            ${{ runner.temp }}/installed-wheel/lab
+            ${{ runner.temp }}/installed-wheel/dashboard
+            ${{ runner.temp }}/installed-wheel/scanner
+            ${{ runner.temp }}/installed-wheel/preflight
+            ${{ runner.temp }}/installed-wheel/wheel-verification.json
   pyrit:
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +56,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -r requirements-pyrit.txt
+      - run: python -m pip install ".[dev,pyrit]"
       - run: python -m pytest tests/ai_triage_lab -q
       - run: python -m ai_triage_lab.pyrit_demo

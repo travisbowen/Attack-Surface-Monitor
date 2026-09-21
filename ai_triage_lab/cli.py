@@ -4,16 +4,17 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+from importlib.resources import files
 from pathlib import Path
 import uuid
 
 from .adapters.scripted import ScriptedAdapter
 from .contracts import VARIANTS, load_scenarios
 from .import_asm import import_scan
-from .report import write_comparison
+from .report import compare_runs, write_comparison
 from .runner import run_trial, save_trial
 
-DEFAULT_SCENARIOS = Path(__file__).resolve().parent.parent / "scenarios"
+DEFAULT_SCENARIOS = Path(str(files("ai_triage_lab").joinpath("data/scenarios")))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -21,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run", help="Run versioned scenarios")
     run.add_argument("--scenarios", type=Path, default=DEFAULT_SCENARIOS)
+    run.add_argument("--suite", choices=("basic", "advanced", "all"), default="basic")
     run.add_argument("--scenario", action="append", help="Scenario ID; repeat to select multiple")
     run.add_argument("--variant", choices=(*VARIANTS, "all"), default="all")
     run.add_argument("--adapter", choices=("scripted", "model"), default="scripted")
@@ -32,8 +34,15 @@ def main(argv: list[str] | None = None) -> int:
     imp = sub.add_parser("import-asm", help="Normalize stored scan JSON; never scan")
     imp.add_argument("directory", type=Path)
     imp.add_argument("--out", type=Path, required=True)
+    compare = sub.add_parser("compare", help="Compare saved runs in a portable offline dashboard")
+    compare.add_argument("directories", type=Path, nargs="+")
+    compare.add_argument("--out", type=Path, required=True, help="New output directory")
     args = parser.parse_args(argv)
     try:
+        if args.command == "compare":
+            compare_runs(args.directories, args.out)
+            print(f"Dashboard: {(args.out / 'report.html').resolve()}")
+            return 0
         if args.command == "import-asm":
             data = import_scan(args.directory)
             args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -43,7 +52,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if not 1 <= args.trials <= 100:
             raise ValueError("trials must be between 1 and 100")
-        scenarios = load_scenarios(args.scenarios)
+        scenarios = load_scenarios(args.scenarios) if args.suite in {"basic", "all"} else []
+        if args.suite in {"advanced", "all"}:
+            from .campaigns import load_campaigns
+            scenarios.extend(load_campaigns())
         if args.scenario:
             unknown = set(args.scenario) - {s.id for s in scenarios}
             if unknown:

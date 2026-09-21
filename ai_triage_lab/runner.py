@@ -15,6 +15,7 @@ from .contracts import Scenario, canonical_hash
 from .evaluate import evaluate
 from .target import TriageTarget
 from .tools import tool_definitions
+from copy import deepcopy
 
 
 @lru_cache(maxsize=1)
@@ -28,15 +29,41 @@ def run_trial(scenario: Scenario, variant: str, adapter: Any, *, trial_id: str |
               observation: dict | None = None, framework: dict | None = None) -> dict:
     trial_id = trial_id or uuid.uuid4().hex
     target = TriageTarget(scenario, variant, trial_id, observation)
+    phases = getattr(scenario, "phases", ())
+    if phases:
+        target.begin_phase(phases[0], 0)
     messages = target.messages()
     config = dict(adapter.config)
     versions = {"implementation_hash": implementation_hash(), "prompt_hash": canonical_hash(messages),
-                "tools_hash": canonical_hash(tool_definitions()), "framework": framework}
+                "tools_hash": canonical_hash(target.tool_definitions()), "framework": framework}
     target.evidence.append("configuration", {"adapter": config, "messages": messages,
-                                             "tools": tool_definitions(), **versions})
+                                             "tools": target.tool_definitions(), **versions})
     started = time.monotonic()
     try:
-        execution = adapter.run(target)
+        if phases:
+            phase_results = []
+            for index, phase in enumerate(phases):
+                if index:
+                    target.begin_phase(phase, index)
+                try:
+                    phase_execution = adapter.run(target)
+                except Exception as exc:
+                    phase_execution = {"status": "error", "error_type": type(exc).__name__}
+                if phase_execution.get("status") not in {"completed", "error", "inconclusive"}:
+                    raise ValueError("Invalid adapter status")
+                phase_results.append({"phase_id": phase.id, **phase_execution})
+                target.evidence.append("phase_finished", {"phase_id": phase.id,
+                    "execution": phase_execution, "state": deepcopy(target.state)})
+                if phase_execution["status"] != "completed":
+                    break
+            execution = {**phase_results[-1], "phases": phase_results}
+            execution.pop("phase_id", None)
+            for key in ("model_calls", "input_tokens", "output_tokens", "cost_usd"):
+                values = [row.get(key) for row in phase_results]
+                execution[key] = sum(values) if all(type(v) in (int, float) for v in values) else None
+            execution["usage_complete"] = all(row.get("usage_complete", True) for row in phase_results)
+        else:
+            execution = adapter.run(target)
         if execution.get("status") not in {"completed", "error", "inconclusive"}:
             raise ValueError("Invalid adapter status")
     except Exception as exc:

@@ -9,6 +9,9 @@ This module orchestrates the following components:
 
 import argparse
 import json
+import ipaddress
+import math
+from importlib.resources import files
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -18,12 +21,13 @@ from asm_lite.probe import probe_http
 from asm_lite.report import write_html_report
 from asm_lite.score import score_http_findings
 from asm_lite.intent import annotate_http_findings
+from asm_lite.scope import normalize_domain
 
 
 # Resolved from this file's location, not the current working directory, so the
 # CLI works when invoked from anywhere. A relative Path("templates") only
 # resolved correctly when the process happened to start in the repo root.
-_TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
+_TEMPLATE_DIR = Path(str(files("asm_lite").joinpath("templates")))
 
 
 def utc_now_iso() -> str:
@@ -56,7 +60,31 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--max-subdomains", type=int, default=200, help="Cap discovery results")
     # HTTP timeout seconds (default: 8.0)
     p.add_argument("--timeout", type=float, default=8.0, help="HTTP timeout seconds")
-    return p.parse_args()
+    p.add_argument("--allow-cidr", action="append", default=[], help="Explicitly authorize non-global addresses within this CIDR")
+    p.add_argument("--max-requests", type=int, default=400)
+    p.add_argument("--max-redirects", type=int, default=3)
+    p.add_argument("--max-response-bytes", type=int, default=262144)
+    p.add_argument("--concurrency", type=int, default=10)
+    p.add_argument("--requests-per-second", type=float, default=5.0)
+    p.add_argument("--max-duration", type=float, default=120.0, help="HTTP probe phase wall-time budget; excludes discovery and system DNS")
+    p.add_argument("--vantage", default="operator-network", help="Operator-provided network location label; not proof of public reachability")
+    args = p.parse_args()
+    try:
+        args.domain = normalize_domain(args.domain)
+        for cidr in args.allow_cidr:
+            ipaddress.ip_network(cidr, strict=True)
+        for label, low, high in (("max_subdomains", 1, 1000), ("max_requests", 1, 10000),
+                                 ("max_redirects", 0, 10), ("max_response_bytes", 1, 2097152),
+                                 ("concurrency", 1, 50)):
+            if not low <= getattr(args, label) <= high:
+                raise ValueError(f"{label} must be in [{low}, {high}]")
+        for label, high in (("timeout", 120), ("requests_per_second", 100), ("max_duration", 3600)):
+            value = getattr(args, label)
+            if not math.isfinite(value) or not 0 < value <= high:
+                raise ValueError(f"{label} must be positive and at most {high}")
+    except ValueError as exc:
+        p.error(str(exc))
+    return args
 
 
 def main() -> int:
@@ -72,9 +100,7 @@ def main() -> int:
     """
     args = parse_args()
 
-    domain = args.domain.strip().lower()
-    if "." not in domain or domain.startswith(".") or domain.endswith("."):
-        raise SystemExit(f"Invalid domain: {args.domain}")
+    domain = args.domain
 
     # Prepare output directory
     out_dir = Path(args.out).expanduser().resolve()
@@ -85,7 +111,8 @@ def main() -> int:
     # -----------------------------
     # Uses certificate transparency to enumerate likely subdomains.
     # This is passive, low-risk, and fast.
-    subs = discover_subdomains(domain, limit=args.max_subdomains)
+    discovery = {}
+    subs = discover_subdomains(domain, limit=args.max_subdomains, metadata=discovery)
 
     # -----------------------------
     # 2) DNS resolution
@@ -99,7 +126,13 @@ def main() -> int:
     # -----------------------------
     # Actively probe standard web endpoints to understand exposure.
     # No exploitation — metadata only.
-    http_findings = probe_http(assets, timeout=args.timeout)
+    http_findings = probe_http(
+        assets, timeout=args.timeout, domain=domain, allowed_cidrs=args.allow_cidr,
+        max_requests=args.max_requests, max_redirects=args.max_redirects,
+        max_response_bytes=args.max_response_bytes, concurrency=args.concurrency,
+        requests_per_second=args.requests_per_second, max_duration=args.max_duration,
+        vantage=args.vantage,
+    )
 
     # Intent inference: classify surfaces + flag potential exposure mismatches
     http_findings = annotate_http_findings(http_findings)
@@ -111,7 +144,27 @@ def main() -> int:
     # 4) Persist outputs
     # -----------------------------
     # Meta file exists so future scans can be compared chronologically.
-    (out_dir / "meta.json").write_text(json.dumps({"domain": domain, "generated_at": utc_now_iso()}, indent=2))
+    (out_dir / "meta.json").write_text(json.dumps({
+        "schema_version": "asm-observation-v2", "domain": domain, "generated_at": utc_now_iso(),
+        "vantage": {"label": args.vantage, "source": "operator-provided", "public_reachability_verified": False},
+        "discovery": discovery, "dns_complete": all(a["dns_complete"] for a in assets),
+        "probe_complete": all(f["complete"] for f in http_findings),
+        "completeness": {
+            "complete": bool(discovery.get("complete")) and all(a["dns_complete"] for a in assets) and all(f["complete"] for f in http_findings),
+            "discovery_complete": discovery.get("complete", False),
+            "dns_complete": all(a["dns_complete"] for a in assets),
+            "probe_complete": all(f["complete"] for f in http_findings),
+            "dns_failure_count": sum(not a["dns_complete"] for a in assets),
+            "probe_incomplete_count": sum(not f["complete"] for f in http_findings),
+            "exhaustive": False,
+        },
+        "exhaustive": False, "address_sampling": "first-approved-IP-per-host",
+        "limits": {key: getattr(args, key) for key in
+                   ("max_subdomains", "timeout", "max_requests", "max_redirects", "max_response_bytes",
+                    "concurrency", "requests_per_second", "max_duration", "allow_cidr")},
+        "limitations": ["CT inventory is not exhaustive", "System DNS uses OS resolver timeouts",
+                        "Probe wall-time excludes discovery and DNS", "Scores are uncalibrated review heuristics"],
+    }, indent=2))
 
     # Raw asset inventory
     (out_dir / "assets.json").write_text(json.dumps(assets, indent=2))

@@ -14,6 +14,9 @@ def _string_schema(maximum: int = 2000) -> dict:
 
 
 TOOL_ARGUMENTS = {
+    "retrieve_document": ({"document_id": _string_schema(80)}, ["document_id"]),
+    "remember_fact": ({"key": _string_schema(80), "value": _string_schema()}, ["key", "value"]),
+    "recall_memory": ({}, []),
     "search_findings": ({"query": _string_schema(), "tenant_id": _string_schema(80)}, ["query"]),
     "get_ticket": ({"ticket_id": _string_schema(80)}, ["ticket_id"]),
     "propose_ticket_update": ({"ticket_id": _string_schema(80), "note": _string_schema()}, ["ticket_id", "note"]),
@@ -70,12 +73,13 @@ class ToolGateway:
         self.tool_budget = tool_budget
         self.call_number = 0
         self.receipts: list[dict] = []
+        self.phase_id: str | None = None
 
     def call(self, action: Action) -> dict[str, Any]:
         self.call_number += 1
         before = canonical_hash(self.state)
         receipt = {"call_id": f"call-{self.call_number}", "tool": action.tool,
-                   "arguments": deepcopy(action.arguments), "policy_allowed": False,
+                   "arguments": deepcopy(action.arguments), "phase_id": self.phase_id, "policy_allowed": False,
                    "decision": "invalid_arguments", "execution": "rejected",
                    "result": None, "state_before": before}
         try:
@@ -99,6 +103,13 @@ class ToolGateway:
 
     def _execute(self, action: Action) -> dict[str, Any]:
         args, state = action.arguments, self.state
+        if action.tool == "retrieve_document":
+            return deepcopy(state["documents"][args["document_id"]])
+        if action.tool == "remember_fact":
+            state["memory"][args["key"]] = {"value": args["value"], "provenance": "model-written-untrusted", "phase_id": self.phase_id}
+            return deepcopy(state["memory"][args["key"]])
+        if action.tool == "recall_memory":
+            return {"memory": deepcopy(state["memory"])}
         if action.tool == "search_findings":
             tenant = args.get("tenant_id", self.principal.tenant_id)
             query = args["query"].lower()

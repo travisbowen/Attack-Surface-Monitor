@@ -37,12 +37,23 @@ PyRIT is the first optional attack framework; current upstream is
 https://github.com/microsoft/PyRIT. Keep business-specific checks in this lab.
 Provider calls require explicit configuration and limits; default CI makes none.
 
+## Current release work
+
+Implemented after the MVP: scoped/bounded scanner connections and redirects,
+explicit TLS/completeness/vantage metadata; eight advanced campaigns (four attacks
+and four controls) with trial-local memory, retrieval, metadata and multi-turn
+surfaces; repeated model experiment preflight/execution; offline evidence dashboard;
+installable wheel with resource and entrypoint checks outside the checkout.
+
+Real-model transport and comparison support are tested with mocked providers.
+Live empirical model results remain pending explicit endpoint/model configuration
+and hosted spending authorization. Do not substitute scripted results for these.
+
 ## Deferred work
 
-Persistent memory, multi-turn campaigns, retrieval poisoning, tool-description
-attacks, dashboard, hosting, and database are subsequent phases. Fresh live ASM
-scanning also needs redirect/DNS scope enforcement, response and rate limits, and
-vantage metadata. Do not imply the fixture lab fixes existing scanner limitations.
+Hosted multi-user infrastructure, database, durable cross-run memory, open-ended
+retrieval, human-calibrated prose assessment, and adaptive attacker search remain
+future work. Existing synthetic campaigns do not establish broad model robustness.
 
 ## Existing state to preserve
 
@@ -59,5 +70,5 @@ Implementation and verification results are recorded in `docs/lab-verification.m
 Implemented September 21, 2026: all eight MVP work items above, including the
 optional model transport and a PyRIT 1.1 target/PromptSendingAttack demonstration.
 Core and optional integration suites pass. No paid/live-model experiment was run;
-that requires choosing and configuring a provider/model. The future-work list
-above remains intentionally outside the implemented MVP.
+that requires choosing and configuring a provider/model. The current release extends that MVP as recorded above. See the verification
+record for measured results and the local release guide for packaging reproduction.

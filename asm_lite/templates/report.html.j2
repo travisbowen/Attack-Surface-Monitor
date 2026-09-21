@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attack Surface Monitor Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; }
+      h1, h2 { margin-bottom: 8px; }
+      .meta { color: #444; margin-bottom: 18px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+      th { background: #f5f5f5; text-align: left; position: sticky; top: 0; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .muted { color: #666; }
+      .error { color: #a00; }
+      .nowrap { white-space: nowrap; }
+      ul.reasons { margin: 0; padding-left: 18px; }
+      ul.reasons li { margin: 0; }
+      .section { margin-top: 24px; }
+      .small { font-size: 12px; }
+    </style>
+  </head>
+
+    <body>
+    <h1>Attack Surface Monitor</h1>
+
+    <div class="meta">
+      <div><b>Domain:</b> <span class="mono">{{ domain }}</span></div>
+      <div><b>Assets:</b> {{ assets | length }} hosts</div>
+      <div><b>HTTP Findings:</b> {{ http_findings | length }} attempted URLs</div>
+      <div class="muted">
+        Note: Findings are generated for analysis and defensive improvement.
+      </div>
+    </div>
+
+    {# ===================== #}
+    {# Top Risks Summary     #}
+    {# ===================== #}
+
+    {% set top_risks = http_findings[:10] %}
+
+    <h2>Top Risks</h2>
+    <p class="muted">
+      Highest scoring HTTP findings (top {{ top_risks | length }}).
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Risk</th>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Intent</th>
+          <th>Mismatch</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in top_risks %}
+        <tr>
+          <td class="mono">
+            {{ f.risk_score if f.risk_score is not none else "" }}
+          </td>
+          <td class="mono">{{ f.url }}</td>
+          <td>
+            {{ f.status_code if f.status_code is not none else "" }}
+          </td>
+          <td>{{ f.intent or "" }}</td>
+          <td>{% if f.exposure_mismatch %}<b>YES</b>{% endif %}</td>
+          <td>
+            {% if f.reasons %}
+              {{ f.reasons[0] }}
+              {% if f.reasons | length > 1 %}
+                <span class="muted">
+                  (+{{ (f.reasons | length) - 1 }} more)
+                </span>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {# ===================== #}
+    {# Asset Inventory       #}
+    {# ===================== #}
+
+    <h2>Assets</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Host</th>
+          <th>IPs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in assets %}
+        <tr>
+          <td class="mono">{{ a.host }}</td>
+          <td class="mono muted">
+            {{ a.ips | join(", ") }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {# ===================== #}
+    {# HTTP Probing Details  #}
+    {# ===================== #}
+
+    <h2>HTTP Probing</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Risk</th>
+          <th>Reasons</th>
+          <th>Intent</th>
+          <th>Mismatch</th>
+          <th>Final URL</th>
+          <th>Title</th>
+          <th>Server</th>
+          <th>TLS notAfter</th>
+          <th>Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in http_findings %}
+        <tr>
+          <td class="mono">{{ f.url }}</td>
+
+          <td>
+            {{ f.status_code if f.status_code is not none else "" }}
+          </td>
+
+          <td class="mono">
+            {{ f.risk_score if f.risk_score is not none else "" }}
+          </td>
+
+          <td>
+            {% if f.reasons %}
+              <ul>
+                {% for r in f.reasons %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+
+          <td>
+            <div><b>{{ f.intent or "" }}</b></div>
+            {% if f.intent_reasons %}
+              <ul>
+                {% for r in f.intent_reasons %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if f.exposure_mismatch %}
+              <div><b>YES</b></div>
+              {% if f.mismatch_reasons %}
+                <ul>
+                  {% for r in f.mismatch_reasons %}
+                    <li>{{ r }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endif %}
+          </td>
+
+          <td class="mono muted">{{ f.final_url or "" }}</td>
+          <td>{{ f.title or "" }}</td>
+          <td class="mono muted">{{ f.server or "" }}</td>
+          <td class="mono muted">{{ f.tls_not_after or "" }}</td>
+          <td class="error">{{ f.error or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

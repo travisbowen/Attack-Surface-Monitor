@@ -9,50 +9,11 @@ Design goals:
 - Produces both a numeric score and human-readable reasons
 """
 
-import re
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
-
-# High-signal keywords that often indicate administrative surfaces
-_ADMIN_KEYWORDS = (
-    "admin",
-    "administrator",
-    "login",
-    "sign in",
-    "dashboard",
-    "console",
-    "management",
-    "grafana",
-    "kibana",
-    "jenkins",
-    "prometheus",
-    "portainer",
-    "gitlab",
-    "jira",
-)
-
-# Hostname patterns that often imply "internal-only" naming conventions
-_INTERNAL_HOST_PATTERNS = (
-    r"\binternal\b",
-    r"\bintra\b",
-    r"\bcorp\b",
-    r"\bprivate\b",
-    r"\bstage\b",
-    r"\bstaging\b",
-    r"\bdev\b",
-    r"\btest\b",
-    r"\bnonprod\b",
-)
-
-
-def _contains_any(text: str, keywords: Tuple[str, ...]) -> bool:
-    t = (text or "").lower()
-    return any(k in t for k in keywords)
-
-
-def _looks_internal_hostname(host: str) -> bool:
-    h = (host or "").lower()
-    return any(re.search(pat, h) for pat in _INTERNAL_HOST_PATTERNS)
+from asm_lite.signals import (admin_signal, contains_any as _contains_any,
+                              looks_internal_hostname as _looks_internal_hostname,
+                              extract_host)
 
 
 def score_http_finding(finding: Dict) -> Dict:
@@ -74,7 +35,6 @@ def score_http_finding(finding: Dict) -> Dict:
 
     url = finding.get("url") or ""
     final_url = finding.get("final_url") or ""
-    title = finding.get("title") or ""
     server = finding.get("server") or ""
     status = finding.get("status_code")
     tls_not_after = finding.get("tls_not_after")
@@ -93,19 +53,29 @@ def score_http_finding(finding: Dict) -> Dict:
         tags.append("http")
 
     if url.startswith("https://") and not tls_not_after:
-        # Missing TLS metadata can indicate misconfigured TLS, SNI quirks, or inspection blocks
+        # Missing metadata is uncertainty, not evidence of a TLS vulnerability.
         score += 5
-        reasons.append("HTTPS endpoint but TLS expiry not captured (possible TLS misconfig)")
+        reasons.append("HTTPS endpoint but TLS expiry not captured (metadata unknown; not evidence of misconfiguration)")
         tags.append("tls-unknown")
 
+    if finding.get("tls_expired") is True:
+        score += 15
+        reasons.append("Observed peer certificate expiry is in the past (review TLS certificate)")
+        tags.append("tls-expired")
+    if finding.get("tls_verified") is False:
+        score += 15
+        reasons.append("TLS certificate verification failed; HTTPS response unavailable")
+        tags.append("tls-verification-failed")
+
     # Redirects can be a sign of exposed legacy entrypoints
-    if final_url and final_url != url:
+    redirected = len(finding["hops"]) > 1 if "hops" in finding else bool(final_url and final_url != url)
+    if redirected:
         score += 5
         reasons.append("Redirect observed (entrypoint exposure/legacy routing)")
         tags.append("redirect")
 
     # High-signal titles/headers
-    if _contains_any(title, _ADMIN_KEYWORDS) or _contains_any(final_url, _ADMIN_KEYWORDS):
+    if admin_signal(finding):
         score += 35
         reasons.append("Admin/auth surface indicated by title or URL patterns")
         tags.append("admin-surface")
@@ -122,7 +92,7 @@ def score_http_finding(finding: Dict) -> Dict:
             reasons.append("Successful response (likely reachable)")
         elif status in (401, 403):
             score += 12
-            reasons.append("Auth/forbidden response (protected surface exposed)")
+            reasons.append("Auth/forbidden response (access control observed; not a confirmed vulnerability)")
             tags.append("auth-wall")
         elif status in (500, 502, 503, 504):
             score += 8
@@ -130,11 +100,7 @@ def score_http_finding(finding: Dict) -> Dict:
             tags.append("server-error")
 
     # If hostname looks internal/staging/dev, raise priority because exposure is often accidental.
-    host = ""
-    try:
-        host = url.split("://", 1)[1].split("/", 1)[0].split(":", 1)[0]
-    except Exception:
-        host = ""
+    host = extract_host(url)
 
     if host and _looks_internal_hostname(host):
         score += 20
@@ -146,6 +112,8 @@ def score_http_finding(finding: Dict) -> Dict:
 
     enriched = dict(finding)
     enriched["risk_score"] = score
+    enriched["score_kind"] = "heuristic-review-priority-v1"
+    enriched["confirmed_vulnerability"] = False
     enriched["reasons"] = reasons
     enriched["tags"] = tags
     return enriched

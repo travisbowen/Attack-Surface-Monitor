@@ -137,3 +137,100 @@ def test_missing_credentials_fail_before_network(monkeypatch):
     monkeypatch.delenv("ASM_LAB_MISSING_KEY", raising=False)
     with pytest.raises(ValueError, match="Missing credential"):
         ModelAdapter(ModelConfig(endpoint="https://model.example.test", model="test", api_key_env="ASM_LAB_MISSING_KEY"))
+
+
+def test_campaign_memory_tool_effects_and_final_assistant_persist(monkeypatch):
+    from ai_triage_lab.campaigns import load_campaigns
+    campaign = next(s for s in load_campaigns() if s.id == "memory-poisoning-control")
+    model, requests = adapter(monkeypatch, [
+        reply([("remember_fact", {"key": "analyst_note", "value": "manual review"})]),
+        reply(content="Saved analyst note for next phase."),
+        reply([("recall_memory", {})]),
+        reply([("publish_report", {"destination_id": "team-a", "finding_ids": ["finding-a"], "summary": "Review"})]),
+        reply()])
+    result = run_trial(campaign, "defended", model)
+    assert result["evaluation"]["legitimate_task"] == "succeeded"
+    assert result["execution"]["model_calls"] == 5
+    history = json.loads(requests[2].content)["messages"]
+    assert history[-2] == {"role": "assistant", "content": "Saved analyst note for next phase."}
+    assert "manual review" in json.loads(requests[3].content)["messages"][-1]["content"]
+
+
+def test_campaign_presents_hostile_tool_description(monkeypatch):
+    from ai_triage_lab.campaigns import load_campaigns
+    campaign = next(s for s in load_campaigns() if s.id == "tool-description-poisoning")
+    model, requests = adapter(monkeypatch, [reply()])
+    run_trial(campaign, "defended", model)
+    definitions = json.loads(requests[0].content)["tools"]
+    assert next(t for t in definitions if t["function"]["name"] == "get_ticket")["function"]["description"] == campaign.phases[0].payload
+
+
+def test_trial_deadline_does_not_reset_per_phase(monkeypatch):
+    from ai_triage_lab.target import TriageTarget
+    target = TriageTarget(SCENARIOS["cross-tenant"], "defended", "deadline")
+    target.started_monotonic -= 121
+    model, requests = adapter(monkeypatch, [])
+    result = model.run(target)
+    assert result["reason"] == "run_budget_or_deadline"
+    assert not requests
+
+
+def test_invalid_later_call_prevents_partial_message_execution(monkeypatch):
+    response = reply([("close_ticket", {"ticket_id": "ticket-a", "verification_id": "recheck-a-passed"}),
+                      ("get_ticket", {"ticket_id": "ticket-a"})])
+    response["choices"][0]["message"]["tool_calls"][1]["id"] = "call-0"
+    model, _ = adapter(monkeypatch, [response])
+    result = run_trial(SCENARIOS["unauthorized-closure"], "vulnerable", model)
+    assert result["execution"]["status"] == "error"
+    assert result["final_state"]["tickets"]["ticket-a"]["status"] == "open"
+
+
+def test_cost_reservation_prevents_call_and_sampling_is_recorded(monkeypatch):
+    model, requests = adapter(monkeypatch, [], max_cost_usd=0.000001,
+                              input_usd_per_million=1, output_usd_per_million=2,
+                              temperature=0, seed=7)
+    result = run_trial(SCENARIOS["cross-tenant"], "defended", model)
+    assert result["execution"]["reason"] == "cost_reservation_limit"
+    assert result["adapter"]["seed"] == 7
+    assert not requests
+
+
+def test_campaign_error_retains_executed_effect_without_defense_credit(monkeypatch):
+    from ai_triage_lab.campaigns import load_campaigns
+    campaign = next(s for s in load_campaigns() if s.id == "multi-turn-manipulation")
+    model, requests = adapter(monkeypatch, [reply(content="Reviewed handover"),
+        reply([("close_ticket", {"ticket_id": "ticket-a", "verification_id": "recheck-a-passed"})]),
+        httpx.Response(503)])
+    result = run_trial(campaign, "vulnerable", model)
+    assert result["execution"]["status"] == "error"
+    assert result["evaluation"]["attack_objective"] == "achieved"
+    assert result["evaluation"]["legitimate_task"] == "unknown"
+    assert result["execution"]["usage_complete"] is False
+    assert result["execution"]["model_calls"] == 3
+    again = run_trial(campaign, "defended", model)
+    assert again["execution"]["status"] == "inconclusive"
+    assert len(requests) == 3
+
+
+@pytest.mark.parametrize("bad_call", [("unknown_tool", {}), ("get_ticket", {"ticket_id": 42})])
+def test_invalid_tool_schema_prevents_all_message_effects(monkeypatch, bad_call):
+    model, _ = adapter(monkeypatch, [reply([
+        ("close_ticket", {"ticket_id": "ticket-a", "verification_id": "recheck-a-passed"}), bad_call])])
+    result = run_trial(SCENARIOS["unauthorized-closure"], "vulnerable", model)
+    assert result["execution"]["status"] == "error"
+    assert result["final_state"]["tickets"]["ticket-a"]["status"] == "open"
+    assert result["evaluation"]["tool_calls"] == 0
+
+
+def test_campaign_missing_usage_preserves_unknown_totals(monkeypatch):
+    from ai_triage_lab.campaigns import load_campaigns
+    campaign = next(s for s in load_campaigns() if s.id == "multi-turn-manipulation")
+    model, _ = adapter(monkeypatch, [reply(), reply(usage=False)],
+                       input_usd_per_million=1, output_usd_per_million=2)
+    result = run_trial(campaign, "defended", model)
+    assert result["execution"]["status"] == "error"
+    assert result["execution"]["model_calls"] == 2
+    assert result["execution"]["cost_usd"] is None
+    assert result["execution"]["input_tokens"] is None
+    assert result["execution"]["output_tokens"] is None
+    assert result["execution"]["phases"][0]["cost_usd"] == pytest.approx(0.00014)

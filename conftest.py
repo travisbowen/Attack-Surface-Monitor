@@ -2,9 +2,8 @@
 Put the repository root on sys.path so `import asm_lite` works under a bare
 `pytest` invocation, not only under `python -m pytest`.
 
-The project is not installed as a package (no pyproject/setup.py), so without
-this the tests would only pass when the current working directory happened to
-be the repo root.
+Source tests deliberately exercise the working tree. Installed-wheel behavior is
+verified separately outside the checkout by scripts/verify_installed.py.
 """
 
 import sys

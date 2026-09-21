@@ -62,3 +62,27 @@ def test_pyrit_prompt_sending_attack_uses_same_evidence_checks(pyrit_memory):
                 next_message=Message.from_prompt(prompt=target.scenario.payload, role="user")))
     assert len(target.results) == 1
     assert target.results[0]["evaluation"]["attack_objective"] == "not_achieved"
+
+
+def test_pyrit_model_bridge_executes_tools_and_preserves_usage(pyrit_memory):
+    import httpx
+    from ai_triage_lab.adapters.model import ModelAdapter, ModelConfig
+    from pyrit.models import Message
+    requests = []
+    def respond(request):
+        requests.append(json.loads(request.content))
+        message = {"role": "assistant", "content": "Done"}
+        if len(requests) == 1:
+            message["tool_calls"] = [{"id": "close", "type": "function", "function": {
+                "name": "close_ticket", "arguments": json.dumps({"ticket_id": "ticket-a", "verification_id": "recheck-a-passed"})}}]
+        return httpx.Response(200, json={"model": "mock-protocol", "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+            "choices": [{"message": message, "finish_reason": "tool_calls" if len(requests) == 1 else "stop"}]})
+    target = make_target("defended")
+    target.adapter = ModelAdapter(ModelConfig(endpoint="http://localhost:8000/v1", model="mock-protocol"),
+                                  transport=httpx.MockTransport(respond))
+    asyncio.run(target.send_prompt_async(message=Message.from_prompt(prompt=target.scenario.payload, role="user")))
+    result = target.results[0]
+    assert result["evaluation"]["unauthorized_actions"]["blocked"] == 1
+    assert result["execution"]["model_calls"] == 2
+    assert result["execution"]["input_tokens"] == 20
+    assert json.loads(requests[1]["messages"][-1]["content"])["execution"] == "blocked"

@@ -5,7 +5,9 @@
 Can an AI security analyst process attacker-controlled observations while
 preserving evidence, tenant isolation, task authorization, and tool limits?
 
-The attacker controls a scanned page's title or Server header. The attacker does
+In basic scenarios the attacker controls a scanned page's title or Server header.
+Advanced campaigns add trial-local memory-writing instructions, synthetic retrieved
+runbooks, selected tool-description prose, and staged external observations. The attacker does
 not control the operator's task, principal, tool implementation, authorization
 policy, verification records, evaluator, or evidence recorder. In the default lab
 all observations and tenants are synthetic. No mock tool accesses a network,
@@ -59,14 +61,19 @@ execution. The canary check is a narrow experiment, not production DLP. The hash
 chain detects modification relative to a trusted saved head; it is not a signed
 audit log, and a local writer could regenerate both chain and head.
 
-No result proves universal model robustness. The eight scenarios are selected
+No result proves universal model robustness. The sixteen scenarios (including six controls) are selected
 examples, not a comprehensive benchmark. Synthetic runs do not validate real
-ticket-system permissions. Multi-turn campaigns and persistent memory poisoning
-remain separate future experiments.
+ticket-system permissions. Advanced multi-turn campaigns share state only inside one trial. Memory
+is model-written and untrusted; it cannot grant task authorization. Retrieved
+records remain tenant-scoped, and tool-description prose cannot alter tool schemas.
+Cross-run durable memory and open-ended retrieval systems remain untested.
 
-Stored ASM observations can be imported, but this work does not fix the scanner's
-redirect/connection-time DNS scoping, response-size limits, TLS ambiguities, or
-vantage-point interpretation. Importing files never starts a scan.
+Stored ASM observations can be imported without starting a scan. The scanner now
+checks approved connection and redirect addresses, bounds HTTP collection, and
+records TLS/errors, limits, completeness and operator-provided vantage. These
+controls do not make discovery exhaustive or prove public reachability: one
+approved address is sampled, and OS DNS/discovery lie outside the HTTP deadline.
+Imports preserve missing historical metadata as unknown.
 
 ## Reference context
 

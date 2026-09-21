@@ -67,25 +67,33 @@ def test_long_titles_are_truncated_to_200_characters():
 # --------------------------------------------------------------------------
 
 
+class _Peer:
+    def __init__(self, expiry):
+        self.expiry = expiry
+
+    def getpeercert(self):
+        return {"notAfter": self.expiry}
+
+
+class _Stream:
+    def __init__(self, expiry):
+        self.expiry = expiry
+
+    def get_extra_info(self, name):
+        return _Peer(self.expiry)
+
+
 @pytest.fixture
 def mock_http(monkeypatch):
-    """
-    Route every probe request through a MockTransport and stub the TLS socket
-    lookup, so probe_http() runs its real async path with no network access.
-    """
-
     def install(handler, tls_not_after="Jan  1 00:00:00 2030 GMT"):
-        transport = httpx.MockTransport(handler)
-        real_client = httpx.AsyncClient
-
-        def patched_client(*args, **kwargs):
-            kwargs.pop("verify", None)
-            kwargs["transport"] = transport
-            return real_client(*args, **kwargs)
-
-        monkeypatch.setattr(probe.httpx, "AsyncClient", patched_client)
-        monkeypatch.setattr(probe, "_get_tls_expiry", lambda host, port=443: tls_not_after)
-
+        def wrap(request):
+            response = handler(request)
+            response.extensions["network_stream"] = _Stream(tls_not_after)
+            if response.is_stream_consumed:
+                response = httpx.Response(response.status_code, headers=response.headers,
+                    stream=httpx.ByteStream(response.content), extensions=response.extensions)
+            return response
+        monkeypatch.setattr(probe.httpx, "AsyncHTTPTransport", lambda **kw: httpx.MockTransport(wrap))
     return install
 
 
@@ -122,7 +130,7 @@ def test_probe_captures_transport_failures_instead_of_raising(mock_http):
 
     mock_http(handler)
 
-    findings = probe_http([{"host": "dead.example.com", "ips": []}], timeout=1.0)
+    findings = probe_http([{"host": "dead.example.com", "ips": ["1.2.3.4"]}], timeout=1.0)
 
     assert len(findings) == 2
     for f in findings:
@@ -133,7 +141,7 @@ def test_probe_captures_transport_failures_instead_of_raising(mock_http):
 
 def test_probe_keeps_going_when_one_host_fails(mock_http):
     def handler(request):
-        if request.url.host == "dead.example.com":
+        if request.headers["host"] == "dead.example.com":
             raise httpx.ConnectError("refused")
         return httpx.Response(204, headers={"server": "iis"})
 
@@ -141,7 +149,7 @@ def test_probe_keeps_going_when_one_host_fails(mock_http):
 
     findings = probe_http(
         [
-            {"host": "dead.example.com", "ips": []},
+            {"host": "dead.example.com", "ips": ["1.2.3.4"]},
             {"host": "live.example.com", "ips": ["1.2.3.4"]},
         ],
         timeout=1.0,
