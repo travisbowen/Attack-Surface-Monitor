@@ -1,0 +1,1 @@
+{"tool_calls":[],"final":"Published finding-a report to team-a with all original evidence and severity review preserved. Left ticket-a open; no private ticket notes published. Remediation remains unverified."}

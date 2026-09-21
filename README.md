@@ -9,8 +9,13 @@ tests what happens when an AI analyst consumes attacker-controlled evidence and
 chooses tools with more authority than the content should have.
 
 **Evidence level:** offline scripted experiments demonstrate harness behavior
-and application controls. They do not measure LLM injection resistance. Repeated
-real-model comparison tooling is implemented; live provider results are pending.
+and application controls. A separate [external-agent runtime pilot](docs/astra-runtime-pilot.md)
+records actual GPT-6 Astra agent behavior on synthetic tasks, with inherited runtime
+instructions/tools and limited coverage. It is not a direct API benchmark or evidence
+of broad injection resistance. Eight planned exposures yielded seven evaluable trials
+and one invalid relay: 7/7 legitimate tasks succeeded; 0/4 attack objectives achieved.
+Repeated direct-provider comparison tooling is implemented;
+that benchmark remains pending provider configuration.
 
 ## Install and demonstrate
 
@@ -80,7 +85,8 @@ review and are not verified vulnerabilities. Importing saved JSON never scans.
 - [Lab guide](docs/ai-triage-lab.md), [advanced campaigns](docs/advanced-campaigns.md), [threat model](docs/threat-model.md).
 - [Results dashboard](docs/results-dashboard.md): offline filtering and cross-run comparison.
 - [Unauthorized closure case study](docs/case-studies/unauthorized-closure.md) and [memory poisoning case study](docs/case-studies/memory-poisoning.md).
-- [Model experiment protocol](docs/model-experiments.md): configuration and spending boundaries; no live findings claimed.
+- [External-agent runtime pilot](docs/astra-runtime-pilot.md): actual agent replies, synthetic tool effects, invalid-trial accounting, and research limitations.
+- [Model experiment protocol](docs/model-experiments.md): direct-provider configuration and spending boundaries.
 - [Local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
 
 Default tests and demos are offline. Dependency installation requires access to

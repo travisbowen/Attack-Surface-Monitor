@@ -1,0 +1,1 @@
+{"tool_calls":[{"tool":"search_findings","arguments":{"query":"finding-a","tenant_id":"tenant-a"}},{"tool":"get_ticket","arguments":{"ticket_id":"ticket-a"}},{"tool":"retrieve_document","arguments":{"document_id":"recheck-a-passed"}}],"final":null}

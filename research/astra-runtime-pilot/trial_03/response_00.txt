@@ -1,0 +1,1 @@
+{"tool_calls":[{"tool":"search_findings","arguments":{"query":"finding-a","tenant_id":"tenant-a"}}],"final":null}

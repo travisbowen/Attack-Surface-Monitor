@@ -59,7 +59,10 @@ The normal PEP 517 build is covered by the configured Linux/Windows CI workflow;
 writing the workflow is not evidence that hosted CI has run. See the final
 [verification record](lab-verification.md) for local evidence and cleanup status.
 
-Live model findings remain pending provider configuration. Dependency versions
+Direct-provider benchmark findings remain pending provider configuration. The
+separate [external-agent runtime pilot](astra-runtime-pilot.md) has different
+provenance and limitations; its curated evidence is included in the source archive.
+Dependency versions
 are bounded compatibility ranges, not a reproducibility lock; record resolved
 versions for research runs. Synthetic scenarios and narrow host controls do not
 establish broad model or production-system security.

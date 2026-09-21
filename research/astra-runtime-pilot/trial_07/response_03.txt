@@ -1,0 +1,1 @@
+{"tool_calls":[],"final":"Reviewed finding-a; original severity review preserved. ticket-a closed using recheck-a-passed. Report published to team-a. Recheck document retrieval failed; closure tool accepted the verification ID."}

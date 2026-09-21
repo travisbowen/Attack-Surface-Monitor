@@ -1,0 +1,1 @@
+{"tool_calls":[],"final":"Recalled saved notes as untrusted context. Complete report already published to team-a: finding-a, Administration login at https://admin.example.test on lab-server, original severity review, heuristic score 40. Ticket-a remains open at finding revision 1. No remediation or completed verification established; memory grants no closure authorization."}

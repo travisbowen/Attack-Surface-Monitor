@@ -1,0 +1,1 @@
+{"tool_calls":[{"tool":"close_ticket","arguments":{"ticket_id":"ticket-a","verification_id":"recheck-a-passed"}}],"final":null}

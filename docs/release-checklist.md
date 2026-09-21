@@ -17,23 +17,44 @@ Hosted multi-user infrastructure is not required for these five priorities.
 | --- | --- | --- |
 | Scanner safety | scanner_hardening (Astra) | Complete: approved connections/redirects, bounded probing, TLS and coverage metadata; 106 scanner tests |
 | Advanced attacks | advanced_attacks (Astra) | Complete: four attack campaigns and four matching controls, persistent phases, independent trials, evidence checks |
-| Real-model comparison | model_evaluation (Astra) | Implementation complete; empirical runs pending endpoint/model and hosted budget. Dynamic sessions, randomized paired schedules, manifests, bounded calls and unknown outcomes tested |
+| Real-model comparison | model_evaluation (Astra) | Direct-provider comparison implementation complete; API benchmark pending configuration. Separate external-agent runtime pilot and curated evidence documented below |
 | Results dashboard | results_dashboard (Astra) | Complete: offline filtering/comparison/evidence; model/config separation and unknown-aware rates. Browser screenshot unavailable |
-| Portfolio packaging | portfolio_release (Astra) | Complete: version 0.2.0 wheel/source archive, three entrypoints, bundled resources, fresh installed-wheel verification and demo/case-study documentation |
+| Portfolio packaging | portfolio_release (Astra) | Version 0.3.0 wheel verified outside checkout; three entrypoints, bundled resources, demo/case-study documentation, and curated runtime-pilot source evidence |
 
-Final integrated verification: **265 tests passed** with PyRIT; **260 passed,
-5 optional tests skipped** in core environment. Installed wheel completed all
-48 scripted trials and validated their evidence chains outside the checkout.
-Independent review corrected false cross-phase memory-control success and unknown
-outcomes entering rate denominators. See `docs/lab-verification.md`.
+Current version **0.3.0**, frozen pilot source commit `cf7b595`. Final source
+regression: **272 tests passed** with PyRIT; **267 passed, 5 optional tests skipped**
+in the core environment. Installed 0.3.0 wheel completed all 48 scripted trials
+and validated all 48 evidence chains outside the checkout. Those trials remain
+scripted harness evidence. See [verification record](lab-verification.md).
 
-## External input
+## Research evidence and remaining limits
 
-Model endpoint/name and hosted spending limit requested but not supplied. No
-configured provider credentials were found; read-only checks of localhost model
-APIs on ports 11434, 1234, and 8000 timed out. No generation calls were made.
-Credential values must not be sent through chat or committed. Live susceptibility
-findings remain unmeasured; scripted evidence is never presented as model findings.
+The [external-agent runtime pilot](astra-runtime-pilot.md) uses actual fresh
+GPT-6 Astra runtime agents on synthetic application tasks. All eight planned
+trials were exposed once: seven valid terminal trials and one invalid relay (04),
+retained without retry. Legitimate tasks succeeded in 7/7 evaluable trials, including
+3/3 valid benign controls; 0/4 attack objectives were achieved. Thirty-one genuine
+replies are preserved (30 valid, one invalid). These are narrow pilot observations,
+not a robustness estimate. Curated request,
+reply, session, effect, and verification records live in
+`research/astra-runtime-pilot/` and are included in the source archive.
+
+This runtime pilot is not a direct-provider benchmark: inherited instructions
+and tools remain available, provider snapshot and sampling settings are unknown,
+and usage, cost, and inference latency are unavailable. A small fixed synthetic
+sample cannot establish broad resistance or an incremental defense benefit when
+both variants avoid the attack. See the pilot for the invalid-trial record and
+two benign tool lookup errors, which did not prevent legitimate completion.
+
+Direct-provider model endpoint/name and hosted spending limit were not supplied.
+No configured provider credentials were found; earlier read-only checks of local
+model APIs on ports 11434, 1234, and 8000 timed out. No direct-provider generation
+calls were made through the experiment adapter. Credential values must not be
+sent through chat or committed.
+
+Browser rendering remains unverified: Orca was unreachable and Edge launch
+returned `EPERM`. No retry bypass or screenshot claim is made. Local artifacts
+are not published or deployed; GitHub CI execution has not been observed.
 
 ## Integration and cleanup
 

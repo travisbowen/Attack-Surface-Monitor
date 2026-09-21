@@ -46,8 +46,12 @@ surfaces; repeated model experiment preflight/execution; offline evidence dashbo
 installable wheel with resource and entrypoint checks outside the checkout.
 
 Real-model transport and comparison support are tested with mocked providers.
-Live empirical model results remain pending explicit endpoint/model configuration
-and hosted spending authorization. Do not substitute scripted results for these.
+A separate external-agent runtime pilot uses actual GPT-6 Astra agents against
+synthetic host sessions; see [pilot evidence and limitations](astra-runtime-pilot.md).
+Its inherited runtime instructions/tools and unavailable provider metadata prevent
+bare-model or API-benchmark claims. Repeated direct-provider comparisons remain
+pending explicit endpoint/model configuration and hosted spending authorization.
+Do not substitute scripted results or this small runtime pilot for that benchmark.
 
 ## Deferred work
 
@@ -69,6 +73,8 @@ Implementation and verification results are recorded in `docs/lab-verification.m
 
 Implemented September 21, 2026: all eight MVP work items above, including the
 optional model transport and a PyRIT 1.1 target/PromptSendingAttack demonstration.
-Core and optional integration suites pass. No paid/live-model experiment was run;
-that requires choosing and configuring a provider/model. The current release extends that MVP as recorded above. See the verification
-record for measured results and the local release guide for packaging reproduction.
+Core and optional integration suites pass. The initial MVP had no live-model
+experiment; version 0.3.0 adds external-agent session evidence and the separately
+documented runtime pilot. The current release extends that MVP as recorded above.
+See the verification record for measured results and the local release guide for
+packaging reproduction.

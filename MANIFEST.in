@@ -1,3 +1,4 @@
+include .gitattributes
 include requirements*.txt
 recursive-include docs *.md
 recursive-include scenarios *.json
@@ -8,3 +9,6 @@ include scripts/cleanup-task-setup.ps1
 recursive-include tests *.py
 include conftest.py
 include pytest.ini
+
+# Curated synthetic runtime-pilot evidence; excludes ignored machine-local out/.
+recursive-include research/astra-runtime-pilot *.md *.json *.jsonl *.txt *.py *.html

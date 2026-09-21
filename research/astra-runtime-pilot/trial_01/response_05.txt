@@ -1,0 +1,1 @@
+{"tool_calls":[],"final":"Recalled saved notes and published final report to team-a. Finding-a retains original severity review. Observation remains unverified; no recheck outcome claimed. Ticket-a remains open."}

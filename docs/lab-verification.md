@@ -1,6 +1,54 @@
 # Implementation and verification record
 
-## Portfolio release 0.2.0 — current status
+## Portfolio release 0.3.0 - current verification
+
+Frozen Python source for the runtime pilot: commit `cf7b595`, version **0.3.0**.
+The release adds persistent external-agent sessions, strict submitted-reply
+validation, request/response linkage, and deterministic reconstruction of synthetic
+application effects. The external runtime selects actions; host tools enforce
+application policy and retain evidence. See [runtime pilot](astra-runtime-pilot.md).
+
+Final source regression on Python 3.12.10, Windows:
+
+- Core: **267 passed, 5 optional PyRIT tests skipped**.
+- Actual PyRIT 1.1 environment: **272 passed**.
+- Installed 0.3.0 wheel, outside checkout: **48/48 completed scripted trials**,
+  **48/48 valid evidence chains**, all three command entrypoints, imported stored
+  scan, experiment preflight, offline dashboard, and scanner/template rendering
+  with mocked network. No network calls or model execution in this wheel check.
+
+Preserved current artifacts:
+
+- `out/verified-wheel-0.3/wheel-verification.json`
+- `out/verified-wheel-0.3/dashboard/report.html`
+- `out/release/asm_ai_triage_lab-0.3.0-py3-none-any.whl`
+- `out/release/asm_ai_triage_lab-0.3.0.tar.gz` (final documentation and curated evidence)
+- `research/astra-runtime-pilot/` (portable synthetic runtime-pilot evidence)
+
+The source archive includes research evidence; the wheel is the separately
+verified runtime artifact. Later documentation/evidence updates do not change
+frozen Python source. The pilot is actual external-agent runtime behavior, not
+scripted model behavior and not a bare-model or direct API benchmark. Eight planned
+exposures produced seven valid terminal trials and one invalid relay (04), retained
+without retry. Legitimate tasks succeeded in 7/7 evaluable trials, including 3/3
+valid benign controls; 0/4 valid attack objectives were achieved. All 31 genuine
+response byte/hash/linkage checks and seven terminal reconstructions passed via
+`python research/astra-runtime-pilot/verify_bundle.py`. Two benign tool lookup
+errors were retained; no valid trial execution failed. An independent root audit
+also verified all seven event chains and saved heads, exact final states, all
+31 replies, and 99 byte-identical exported source evidence files. Provider
+snapshot, temperature, model seed, token usage, cost, and inference latency are
+unknown. Inherited runtime instructions/tools remain available. Small synthetic
+samples do not establish robustness; invalid trials do not count as defense wins.
+
+Browser verification remains blocked: Orca was unreachable and Edge launch
+returned `EPERM`. Dashboard DOM checks and generated HTML are available, but no
+actual browser rendering or screenshot is claimed. No policy bypass attempted.
+Hosted CI execution, public package publication, and deployment remain unverified
+or unperformed. Earlier policy-blocked cleanup resources below remain recorded;
+this documentation pass creates no new environment or background service.
+
+## Portfolio release 0.2.0 — historical verification
 
 Five GPT-6 Astra workstreams delivered scanner hardening, advanced attacks,
 model-experiment tooling, offline dashboard, and installable portfolio packaging.
@@ -37,7 +85,7 @@ require later-phase readback of earlier-provenance data; unknown outcomes are
 excluded from appropriate metric denominators and reported separately. Model
 messages also validate all tool schemas before executing any call in that message.
 
-**Live-model research remains pending.** No endpoint/model/budget was supplied.
+**At the 0.2.0 verification, live-model research was pending.** No endpoint/model/budget was supplied.
 Read-only local API probes timed out. Model/PyRIT tests use mocked model transport;
 the 48-trial results are scripted harness evidence, not measured LLM robustness.
 See `docs/model-experiments.md` for the ready-to-run experiment protocol.

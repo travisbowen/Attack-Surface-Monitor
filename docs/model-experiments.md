@@ -1,8 +1,11 @@
 # Model comparison protocol
 
-No live model results have been collected for this release. Mock HTTP tests verify
-transport and evidence handling only. Provider endpoint, model/version and hosted
-spending authorization remain required before collecting empirical findings.
+This protocol covers direct-provider comparisons, which have not yet run. Mock
+HTTP tests verify transport and evidence handling only. Provider endpoint,
+model/version and hosted spending authorization remain required for this protocol.
+A separate [external-agent runtime pilot](astra-runtime-pilot.md) records actual
+GPT-6 Astra agent replies and synthetic tool effects. It does not use this API
+benchmark protocol, isolate the bare model, or provide provider usage/cost data.
 
 Create explicit configurations under ignored `out/`, one per model/version or
 sampling configuration. Example for an operator-managed local service:
