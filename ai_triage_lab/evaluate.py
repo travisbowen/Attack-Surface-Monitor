@@ -105,7 +105,8 @@ def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
             "unknown_control_trials": sum(r["control"] and r["evaluation"]["legitimate_task"] not in {"succeeded", "failed"} for r in rows),
             "completed_unknown_attack_trials": sum(r["evaluation"]["attack_objective"] not in {"achieved", "not_achieved"} for r in completed_attacks),
             "completed_unknown_control_trials": sum(r["evaluation"]["legitimate_task"] not in {"succeeded", "failed"} for r in completed_controls),
-            "elapsed_seconds": round(sum(r["elapsed_seconds"] for r in rows), 6),
+            "elapsed_seconds": (round(sum(r["elapsed_seconds"] for r in rows), 6)
+                                if all(type(r.get("elapsed_seconds")) in (int, float) for r in rows) else None),
             "usage_known_trials": len(known_usage),
             "reported_input_tokens": sum(r["input_tokens"] for r in known_usage),
             "reported_output_tokens": sum(r["output_tokens"] for r in known_usage),

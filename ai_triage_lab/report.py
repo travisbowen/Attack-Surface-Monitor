@@ -22,13 +22,30 @@ def _number(value) -> bool:
     return type(value) in (int, float) and math.isfinite(value) and value >= 0
 
 
+def _timing_kind(result: dict) -> str:
+    if result.get("adapter", {}).get("adapter") == "external-agent":
+        return "host_session_wall_time" if result.get("timing_kind") == "host_session_wall_time" else "external_unmeasured"
+    return "trial_wall_time"
+
+
+def _timing_label(kind: str) -> str:
+    return {"host_session_wall_time": "Host session wall time; includes orchestration delays, not inference latency",
+            "external_unmeasured": "External runtime timing unmeasured; model inference latency unknown",
+            "trial_wall_time": "Trial wall time; includes harness and transport overhead"}.get(kind, "Mixed timing bases; no mean reported")
+
+
 def _identity(result: dict) -> tuple[str, str, str]:
     adapter = result.get("adapter", {})
     kind = adapter.get("adapter")
-    mode = {"scripted": "Scripted harness", "model": "Real-model adapter"}.get(kind, "Unknown adapter")
+    mode = {"scripted": "Scripted harness", "model": "Real-model adapter",
+            "external-agent": "External-agent runtime pilot"}.get(kind, "Unknown adapter")
     model = str(adapter.get("model") or kind or "Unknown")
-    cohort = canonical_hash({"adapter": adapter, "implementation": result.get("implementation_hash"),
-                             "framework": result.get("framework")})
+    # Audit IDs identify independent sessions, not distinct runtime configurations.
+    # Preserve every other field (including runtime, model and protocol settings).
+    cohort_adapter = ({key: value for key, value in adapter.items() if key not in {"session_id", "agent_id"}}
+                      if kind == "external-agent" else adapter)
+    cohort = canonical_hash({"adapter": cohort_adapter, "implementation": result.get("implementation_hash"),
+                             "framework": result.get("framework"), "timing_kind": _timing_kind(result)})
     return mode, model, cohort
 
 
@@ -70,7 +87,12 @@ def summarize(rows: list[dict]) -> dict:
     known_tasks = [r for r in completed if r["evaluation"]["legitimate_task"] in {"succeeded", "failed"}]
     successes = sum(r["evaluation"]["attack_objective"] == "achieved" for r in attacks)
     tasks = sum(r["evaluation"]["legitimate_task"] == "succeeded" for r in known_tasks)
-    latency = [r["elapsed_seconds"] for r in rows if _number(r.get("elapsed_seconds"))]
+    timing_kinds = {_timing_kind(r) for r in rows}
+    timing_kind = next(iter(timing_kinds)) if len(timing_kinds) == 1 else "mixed"
+    # Legacy external artifacts may contain replay compute in elapsed_seconds.
+    # Never mistake reconstruction time for an observed live-session measurement.
+    latency = [r["elapsed_seconds"] for r in rows if _timing_kind(r) != "external_unmeasured"
+               and _number(r.get("elapsed_seconds"))] if len(timing_kinds) == 1 else []
     costs = [r["execution"]["cost_usd"] for r in rows if _number(r.get("execution", {}).get("cost_usd"))]
     usage = [r["execution"] for r in rows if r.get("execution", {}).get("usage_complete", True) and
              all(type(r.get("execution", {}).get(k)) is int and r["execution"][k] >= 0
@@ -99,6 +121,7 @@ def summarize(rows: list[dict]) -> dict:
             "completed_unknown_control_trials": len(controls) - len(valid_controls),
             "control_failure_rate": failures / len(valid_controls) if valid_controls else None,
             "unauthorized_actions": actions, "elapsed_seconds": sum(latency) if len(latency) == len(rows) else None,
+            "timing_kind": timing_kind,
             "latency_known_trials": len(latency),
             "mean_elapsed_seconds": sum(latency) / len(latency) if latency else None,
             "cost_usd": sum(costs) if costs and len(costs) == len(rows) else None,
@@ -138,7 +161,8 @@ def _metrics_cells(metrics: dict) -> str:
             f'<td>{_rate(metrics["control_failures"], metrics["valid_control_trials"])}'
             f'<small>{metrics["completed_unknown_control_trials"]} completed controls with unknown task outcome</small></td>'
             f'<td>{actions["attempted"]} / {actions["blocked"]} / {actions["executed"]}</td>'
-            f'<td>{latency_text}<small>{metrics["latency_known_trials"]} / {metrics["trials"]} known</small></td>'
+            f'<td>{latency_text}<small>{_timing_label(metrics["timing_kind"])}</small>'
+            f'<small>{metrics["latency_known_trials"]} / {metrics["trials"]} known</small></td>'
             f'<td>{cost_text}<small>{metrics["cost_known_trials"]} / {metrics["trials"]} known</small></td>')
 
 
@@ -153,7 +177,8 @@ def _trial(result: dict, metadata: dict, index: int) -> str:
     receipts = [event for event in events if event.get("kind") == "tool_receipt"]
     state = {"initial_state": result.get("initial_state"), "final_state": result.get("final_state")}
     provenance = {key: result.get(key) for key in ("trial_id", "scenario_hash", "implementation_hash", "prompt_hash",
-                                                  "tools_hash", "framework", "adapter", "execution", "evidence_head")}
+                                                  "tools_hash", "framework", "adapter", "execution", "evidence_head",
+                                                  "timing_kind", "elapsed_seconds", "reconstruction_seconds", "external_provenance")}
     attention = evaluation["attack_objective"] == "achieved" or actions.get("executed", 0) > 0
     status_class = "danger" if attention else "neutral"
     return (f'<details class="trial" {_attrs(metadata)} data-order="{index}">'
@@ -163,6 +188,8 @@ def _trial(result: dict, metadata: dict, index: int) -> str:
             f'<span>{_text(evaluation["trial_status"])}</span></summary>'
             f'<div class="trial-body"><dl><dt>Trial ID</dt><dd>{_text(result["trial_id"])}</dd>'
             f'<dt>Execution mode</dt><dd>{_text(metadata["mode"])}</dd>'
+            f'<dt>Timing basis</dt><dd>{_timing_label(_timing_kind(result))}. '
+            'Reconstruction time, if recorded in provenance, measures host replay only and is excluded from timing averages.</dd>'
             f'<dt>Legitimate task</dt><dd>{_text(evaluation["legitimate_task"])}</dd>'
             f'<dt>Unauthorized actions</dt><dd>{actions.get("attempted", 0)} attempted / '
             f'{actions.get("blocked", 0)} blocked / {actions.get("executed", 0)} executed</dd>'
@@ -229,14 +256,16 @@ def write_comparison(directory: Path, results: list[dict], *, run_labels: list[s
                       '<th scope="col">Task successes / known completed tasks</th>'
                       '<th scope="col">Control failures / known completed controls</th>'
                       '<th scope="col">Unauthorized<br>attempted / blocked / executed</th>'
-                      '<th scope="col">Mean wall time</th><th scope="col">Cost (USD)</th>')
+                      '<th scope="col">Mean observed time / basis</th><th scope="col">Cost (USD)</th>')
     body = ('<a class="skip" href="#main">Skip to results</a><header><div><h1>AI Triage Lab</h1>'
             '<p>Evaluation results</p></div><a href="#evidence">Inspect trial evidence</a></header><main id="main">'
             '<section class="intro" aria-labelledby="readout"><h2 id="readout">What held. What failed. What remains unknown.</h2>'
             '<p>Compare identical tasks across defenses. Follow outcomes back to actual tool receipts and state changes.</p>'
             '<p class="notice"><strong>Scripted runs verify harness behavior; they do not measure model robustness.</strong> '
             'Errors and incomplete trials are not successful defenses. Real-model adapter labels identify configured transport, '
-            'not independent proof of provider execution.</p></section>'
+            'not independent proof of provider execution. External-agent runtime pilots use live agent responses with '
+            'inherited runtime instructions and tools; they are not bare-model or direct API equivalents. '
+            'Unmeasured tokens and costs remain unknown.</p></section>'
             '<noscript><p class="notice">JavaScript is disabled. All results and expandable evidence remain available; filters require JavaScript.</p></noscript>'
             '<form id="filters" hidden><div class="filters">' + ''.join(controls) + '</div>'
             '<div class="filter-actions"><button type="reset">Reset filters</button><p id="selection" role="status" aria-live="polite"></p></div></form>'
@@ -260,7 +289,9 @@ def write_comparison(directory: Path, results: list[dict], *, run_labels: list[s
             + ''.join(_trial(r, m, i) for i, (r, m) in enumerate(zip(results, metadata))) + '</div>'
             '<p id="empty-trials" hidden>No trials match these filters. Reset filters to see all evidence.</p></section>'
             '<footer><p>Offline artifact · no server or network required. Small samples are descriptive, not robustness guarantees. '
-            'Wall time includes harness and transport overhead. Costs are adapter-reported estimates when configured; unknown is not zero.</p>'
+            'Trial wall time includes harness and transport overhead. External-agent model inference latency is unknown; '
+            'explicit host session timing includes orchestration delays. Reconstruction time is excluded. '
+            'Costs are adapter-reported estimates when configured; unknown is not zero.</p>'
             '<details><summary>Machine-readable summary</summary>' + _json(summary) + '</details></footer></main>')
     def digest(value: str) -> str:
         return base64.b64encode(hashlib.sha256(value.encode("utf-8")).digest()).decode("ascii")

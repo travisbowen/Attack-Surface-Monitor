@@ -160,6 +160,67 @@ def test_fixture_hashes_split_scenario_matrix(tmp_path, result):
     assert len([a for _, a in dom.elements if a.get("class") == "scenario-row"]) == 2
 
 
+def test_external_sessions_group_only_equivalent_runtime_configurations(tmp_path, result):
+    baseline = {"adapter": "external-agent", "model": "runtime-selected GPT-6 Astra",
+                "runtime": "agent-runtime-v1", "protocol": "host-tools-v1", "max_turns": 4,
+                "session_id": "session-1", "agent_id": "agent-1"}
+    rows = []
+    for changes in ({}, {"session_id": "session-2", "agent_id": "agent-2"},
+                    {"runtime": "agent-runtime-v2"}, {"model": "other-model"},
+                    {"protocol": "host-tools-v2"}, {"max_turns": 8}):
+        row = deepcopy(result)
+        row["adapter"] = {**baseline, **changes}
+        row["execution"].update(input_tokens=None, output_tokens=None, cost_usd=None, usage_complete=False)
+        rows.append(row)
+    original = deepcopy(rows)
+    summary = write_comparison(tmp_path, rows)
+    assert rows == original  # Audit IDs remain in evidence.
+    assert len(summary["groups"]) == 5
+    assert sorted(g["trials"] for g in summary["groups"]) == [1, 1, 1, 1, 2]
+    assert all(g["mode"] == "External-agent runtime pilot" for g in summary["groups"])
+    assert all(g["cost_usd"] is None and g["usage_known_trials"] == 0 for g in summary["groups"])
+    html = (tmp_path / "report.html").read_text(encoding="utf-8")
+    assert "External-agent runtime pilot" in html
+    assert "inherited runtime instructions and tools" in html
+    assert "not bare-model or direct API equivalents" in html
+    assert "session-1" in html and "session-2" in html
+
+
+def test_session_fields_still_separate_non_external_adapters(tmp_path, result):
+    other = deepcopy(result)
+    result["adapter"]["session_id"] = "one"
+    other["adapter"]["session_id"] = "two"
+    assert len(write_comparison(tmp_path, [result, other])["groups"]) == 2
+
+
+def test_external_reconstruction_is_not_model_or_session_latency(tmp_path, result):
+    result["adapter"] = {"adapter": "external-agent", "runtime": "host", "model": "model-a"}
+    result["elapsed_seconds"] = None
+    result["reconstruction_seconds"] = .025
+    result["external_provenance"] = {"latency": "unknown; host timestamps include orchestration delays"}
+    legacy = deepcopy(result)
+    legacy["elapsed_seconds"] = .025  # Older host replay field must not become model latency.
+    observed = deepcopy(result)
+    observed["timing_kind"] = "host_session_wall_time"
+    observed["elapsed_seconds"] = 42
+    api = deepcopy(result)
+    api["adapter"] = {"adapter": "model", "model": "model-a"}
+    api["elapsed_seconds"] = 2
+    summary = write_comparison(tmp_path, [result, legacy, observed, api])
+    assert len(summary["groups"]) == 3
+    groups = {group["timing_kind"]: group for group in summary["groups"]}
+    assert groups["external_unmeasured"]["mean_elapsed_seconds"] is None
+    assert groups["external_unmeasured"]["latency_known_trials"] == 0
+    assert groups["host_session_wall_time"]["mean_elapsed_seconds"] == 42
+    assert groups["trial_wall_time"]["mean_elapsed_seconds"] == 2
+    assert summarize([observed, api])["mean_elapsed_seconds"] is None
+    html = (tmp_path / "report.html").read_text(encoding="utf-8")
+    assert "includes orchestration delays, not inference latency" in html
+    assert "model inference latency unknown" in html
+    assert "Reconstruction time is excluded" in html
+    assert "reconstruction_seconds" in html and "external_provenance" in html
+
+
 def test_empty_dashboard_is_valid(tmp_path):
     summary = write_comparison(tmp_path, [])
     assert summary["groups"] == [] and summary["variants"] == {}

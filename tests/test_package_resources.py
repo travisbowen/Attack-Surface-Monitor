@@ -6,7 +6,7 @@ import tomllib
 
 def test_distribution_version_matches_evidence_version():
     from ai_triage_lab import __version__
-    metadata = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
+    metadata = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8"))
     assert metadata["project"]["version"] == __version__
 
 

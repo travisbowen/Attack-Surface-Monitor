@@ -61,3 +61,11 @@ hostile text, CSP hashes, unknown denominators, model grouping, fixture separati
 comparison import and advanced CLI. If Node is available, it also executes shipped
 filter/sort code against generated DOM metadata. This DOM harness does not replace
 browser visual/accessibility verification.
+
+Local browser verification attempt (September 21, 2026) remained blocked: the
+public Orca CLI reported its runtime as `starting` and unreachable; an isolated
+headless Edge launch then failed with `Error: spawn EPERM` (`errno: -4048`). No
+browser/server process started and no screenshots were captured. Real-browser
+filtering, sorting, expandable evidence, responsive rendering and console checks
+remain pending. Exact local attempt evidence and the unexecuted browser harness
+are preserved under ignored `out/browser-verification/`.

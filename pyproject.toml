@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asm-ai-triage-lab"
-version = "0.2.0"
+version = "0.3.0"
 description = "Bounded attack-surface observation and synthetic AI security triage evaluation"
 readme = "README.md"
 requires-python = ">=3.11"

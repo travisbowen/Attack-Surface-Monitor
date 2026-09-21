@@ -1,6 +1,6 @@
 # Build and verify a local release
 
-Distribution: `asm-ai-triage-lab` 0.2.0, Python 3.11+. This guide builds local
+Distribution: `asm-ai-triage-lab` 0.3.0, Python 3.11+. This guide builds local
 artifacts; it does not publish a package. No software license is declared in the
 repository; choose appropriate licensing before public package distribution.
 
@@ -27,7 +27,7 @@ For POSIX shells, substitute your absolute repository path:
 REPO=/absolute/path/to/Attack-Surface-Monitor
 WORK=$(mktemp -d)
 python -m venv "$WORK/venv"
-"$WORK/venv/bin/python" -m pip install "$REPO/out/release/asm_ai_triage_lab-0.2.0-py3-none-any.whl"
+"$WORK/venv/bin/python" -m pip install "$REPO/out/release/asm_ai_triage_lab-0.3.0-py3-none-any.whl"
 cd "$WORK"
 "$WORK/venv/bin/python" -I "$REPO/scripts/verify_installed.py"
 ```
