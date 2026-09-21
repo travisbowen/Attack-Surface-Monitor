@@ -17,6 +17,11 @@ and one invalid relay: 7/7 legitimate tasks succeeded; 0/4 attack objectives ach
 Repeated direct-provider comparison tooling is implemented;
 that benchmark remains pending provider configuration.
 
+A source-checkout [automatic external-agent transport](docs/external-agent-transport.md)
+now drives the existing session protocol through an operator-supplied subprocess
+bridge. Its offline fixtures test transport behavior; they add no live measurements
+and do not change the eight archived exposures or their classifications.
+
 ## Install and demonstrate
 
 Requires Python 3.11 or later; local release verified with Python 3.12 on Windows.
@@ -86,6 +91,7 @@ review and are not verified vulnerabilities. Importing saved JSON never scans.
 - [Results dashboard](docs/results-dashboard.md): offline filtering and cross-run comparison.
 - [Unauthorized closure case study](docs/case-studies/unauthorized-closure.md) and [memory poisoning case study](docs/case-studies/memory-poisoning.md).
 - [External-agent runtime pilot](docs/astra-runtime-pilot.md): actual agent replies, synthetic tool effects, invalid-trial accounting, and research limitations.
+- [Automatic external-agent transport](docs/external-agent-transport.md): source-checkout bridge protocol, bounded execution, provenance, and failure handling.
 - [Model experiment protocol](docs/model-experiments.md): direct-provider configuration and spending boundaries.
 - [Local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
 

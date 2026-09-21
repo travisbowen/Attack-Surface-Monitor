@@ -22,10 +22,24 @@ Hosted multi-user infrastructure is not required for these five priorities.
 | Portfolio packaging | portfolio_release (Astra) | Version 0.3.0 wheel verified outside checkout; three entrypoints, bundled resources, demo/case-study documentation, and curated runtime-pilot source evidence |
 
 Current version **0.3.0**, frozen pilot source commit `cf7b595`. Final source
-regression: **272 tests passed** with PyRIT; **267 passed, 5 optional tests skipped**
+regression for that frozen application: **272 tests passed** with PyRIT;
+**267 passed, 5 optional tests skipped**
 in the core environment. Installed 0.3.0 wheel completed all 48 scripted trials
 and validated all 48 evidence chains outside the checkout. Those trials remain
 scripted harness evidence. See [verification record](lab-verification.md).
+
+The [automatic external-agent transport](external-agent-transport.md) is complete
+as a source-checkout companion. Final focused verification: **24 passed**
+(20 transport tests and four existing host tests). The offline demo completed at
+`out/transport-demo-20260921` with `measurement: false`; it is not a live model
+measurement. Archived verification still passes all seven valid reconstructions
+and evidence chains, all 31 original replies, and the eight-exposure/seven-valid/
+one-invalid accounting. Source packaging includes both bridge scripts and their
+guide; installed wheel commands and frozen application source are unchanged.
+Eight additional portability regressions passed on Windows with simulated POSIX
+and Windows fingerprint conventions. The bundle verifier checks source-text
+equivalence before adapting only a replay copy's fingerprint; archived evidence
+stays unchanged. Actual Linux execution has not been performed.
 
 ## Research evidence and remaining limits
 
@@ -52,8 +66,10 @@ model APIs on ports 11434, 1234, and 8000 timed out. No direct-provider generati
 calls were made through the experiment adapter. Credential values must not be
 sent through chat or committed.
 
-Browser rendering remains unverified: Orca was unreachable and Edge launch
-returned `EPERM`. No retry bypass or screenshot claim is made. Local artifacts
+Browser rendering remains unverified: a read-only Orca recheck found process
+`53008` running but runtime state `starting`, `reachable: false`, and
+`runtimeId: null`. Earlier Edge launch returned `EPERM`; no Edge retry, bypass,
+or screenshot claim is made. Local artifacts
 are not published or deployed; GitHub CI execution has not been observed.
 
 ## Integration and cleanup

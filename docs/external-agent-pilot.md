@@ -1,5 +1,10 @@
 # External-agent runtime pilot
 
+For automated envelope delivery and byte-preserving response capture, see the
+[source-checkout transport guide](external-agent-transport.md). The commands below
+remain the underlying manual host protocol. The companion script does not change
+the frozen 0.3.0 application implementation or authenticate model identity.
+
 This finite host-only JSON protocol permits actual authorized Astra agent sessions to supply target responses without an API endpoint. Adapter label: `external-agent`; provenance: `Astra agent runtime pilot`; model label: `runtime-selected GPT-6 Astra`. This is a runtime pilot, not a bare-model benchmark. Higher-priority inherited instructions and available runtime tools remain present. The coordinator instructs the target to use no real tools; the host only executes the existing synthetic gateway. Temperature, seed, tokens, cost, and model latency are unknown.
 
 Use a fresh fork-none target agent per trial. Its task is to continue the supplied target conversation, return only the strict JSON described in the envelope, and never invoke its runtime tools. Pass the envelope unchanged. Host paths, scenario fixtures, expected outcomes, and session state stay outside the target conversation. Agent/session IDs are host-recorded audit metadata, not cryptographic identity proof. Only actual collaborator output bytes may enter live artifacts. Unit tests use dry fixtures and are not measurements.

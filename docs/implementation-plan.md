@@ -53,6 +53,18 @@ bare-model or API-benchmark claims. Repeated direct-provider comparisons remain
 pending explicit endpoint/model configuration and hosted spending authorization.
 Do not substitute scripted results or this small runtime pilot for that benchmark.
 
+Automatic external-agent transport is a source-checkout companion script around
+the frozen 0.3.0 session API; see [transport guide](external-agent-transport.md).
+It automates bounded subprocess delivery, exact response capture, host submission,
+and evidence export. Dry fixtures and explicit runtime operator attestation keep
+transport verification separate from actual runtime observations. Attestation is
+not model authentication, and the subprocess is not a sandbox. No new live-model
+measurements are added by this implementation step: preserve the original eight
+exposures, seven evaluable trials, and one invalid relay without retry or
+reclassification. A real runtime/API bridge and its authorization remain operator
+responsibilities. The existing wheel entrypoints and frozen application hashes
+are unchanged; the new script is run from the checkout.
+
 ## Deferred work
 
 Hosted multi-user infrastructure, database, durable cross-run memory, open-ended

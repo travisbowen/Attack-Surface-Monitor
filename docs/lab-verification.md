@@ -1,5 +1,78 @@
 # Implementation and verification record
 
+## Automatic transport follow-up - September 21, 2026
+
+Added source-checkout `scripts/run_external_agent.py` and the offline
+`scripts/offline_external_bridge.py` fixture. The runner exchanges bounded
+stdin/stdout with a trusted operator-supplied bridge, captures original bytes,
+submits through the existing host API, retains failure records, and exports
+explicitly separated fixture/runtime evidence. Runtime attestation is an operator
+assertion, not model authentication. The subprocess is not a sandbox. No native
+agent-runtime connection or live provider bridge was configured for this step.
+See [transport protocol and reproduction](external-agent-transport.md).
+
+Final focused regression on the existing Python 3.12 core environment:
+
+```powershell
+.\out\core-venv\Scripts\python.exe -m pytest -q tests/test_external_agent_transport.py tests/ai_triage_lab/test_external_agent.py
+```
+
+**24 passed in 9.07 seconds**: 20 transport cases and four existing host cases.
+Coverage includes exact-byte multistep and campaign delivery, malformed replies,
+unknown tools, output/request/time bounds, nonzero exits, cancellation, process
+cleanup, fixture isolation, and explicitly unverified runtime-export provenance.
+The runtime-export test uses a temporary offline fake; it is not a model
+measurement. No provider calls occurred. This focused check supplements the
+historical full-suite results below; no new full-suite execution is claimed.
+
+Root's offline demo completed with `mode: dry-fixture`, `measurement: false`,
+and `identity_verified: false`; evidence remains in
+`out/transport-demo-20260921/transport.json`, `fixture-result.json`, `session.json`,
+and `turns/`. The fixed final reply checks transport completion, not successful
+security analysis. No new live-model trials were generated.
+
+`python research/astra-runtime-pilot/verify_bundle.py` passed again: seven valid
+terminal reconstructions/chains, all 31 original replies, and unchanged accounting
+of eight exposures, seven valid trials, and one invalid relay. No retry or
+reclassification occurred. Frozen application source and the previously verified
+0.3.0 wheel remain unchanged. The 0.3.0 source archive is rebuilt with the companion
+scripts, new tests, documentation, and unchanged curated pilot evidence.
+
+The archived-bundle verifier now handles the frozen runner's platform-dependent
+relative-path spelling. It recomputes both known fingerprints from all application
+Python source using the original UTF-8/universal-newline text normalization, varying
+only Windows versus POSIX path separators. Archived and native fingerprints must
+match this pair, and the session must match the manifest. Only an in-memory deep
+copy receives the native fingerprint for reconstruction. Original session files,
+response bytes, saved results, and evidence heads remain unchanged.
+
+```powershell
+.\out\core-venv\Scripts\python.exe -m pytest -q tests/test_pilot_bundle_portability.py
+```
+
+**Eight passed in 0.20 seconds** on Windows. Tests simulate both platform
+fingerprint conventions and reconstruct an archived trial under the opposite
+convention; they reject changed source, unknown fingerprints, manifest mismatch,
+and stale native hashes. These are simulated convention checks, not an actual
+Linux execution. This count is separate from the 24 transport/host tests above.
+
+Read-only Orca status reconfirmed process `53008` running, but state `starting`,
+`reachable: false`, and `runtimeId: null`. Actual browser rendering remains
+blocked. No Edge retry or policy bypass occurred. Direct-provider benchmarking
+still requires an explicitly configured provider account/model and authorized
+spending; it remains separate from completed offline transport verification.
+Transport implementation, focused regression, offline demonstration, archived
+evidence verification, and release packaging are complete. External checks remain:
+actual browser rendering, optional direct-provider credentials/endpoint/model
+configuration and measurement, remote CI observation, and the policy-blocked
+cleanup already recorded below. These limits do not establish complete external
+verification of the project.
+
+No new environments, services, or worktrees were created. Test-owned processes
+were terminated and temporary test directories removed. Prior policy-blocked
+cleanup resources recorded below were not retried. Final demo and release
+artifacts are retained as verification evidence.
+
 ## Portfolio release 0.3.0 - current verification
 
 Frozen Python source for the runtime pilot: commit `cf7b595`, version **0.3.0**.
