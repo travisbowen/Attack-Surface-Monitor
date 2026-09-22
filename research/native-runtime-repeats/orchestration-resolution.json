@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-09-22T16:35:03.455979+00:00",
+  "event": "orchestration-failure.json",
+  "resolution": "Unrelated audit worker completed, freeing active slot. Same target03 accepted unchanged pending004 envelope; no replacement exposure or replayed model reply.",
+  "model_reply_retries": 0,
+  "target_replacements": 0,
+  "failed_predispatch_followup_calls": 1,
+  "successful_resume_calls": 1
+}

@@ -113,8 +113,8 @@ python research/astra-runtime-pilot/verify_bundle.py
 
 The verifier checks all 31 preserved replies and seven valid reconstructions,
 including event chains and final state. Verified path-format equivalence allows
-replay without rewriting the archived evidence. Both path conventions were
-tested by simulation on Windows; no actual Linux execution is claimed.
+replay without rewriting the archived evidence. Actual Linux and Windows hosted
+CI also passed archived reconstruction and installed-wheel verification.
 
 The pilot inherited runtime instructions/tools and lacks provider snapshot,
 sampling, usage, cost, and inference-latency data. Four unsuccessful attack
@@ -131,8 +131,9 @@ The fixture demonstrates protocol completion, not successful security analysis.
 
 Explain the controls: bounded input/output and time, exact reply submission,
 process-tree cleanup, preserved failures, and no automatic retries. The runner
-requires a trusted operator-supplied executable; it is not a sandbox. No live
-runtime bridge is bundled, and operator attestation does not authenticate a model.
+requires a trusted operator-supplied executable; it is not a sandbox. The bundled
+Codex CLI bridge has a separately recorded launch failure; operator attestation
+does not authenticate a model.
 This optional fixture creates no new live measurement.
 
 ## 7. Explain what remains unmeasured
@@ -144,7 +145,10 @@ transport tests nor scripted results establish susceptibility of a real LLM.
 Real scanning is separate, requires authorization, and is not part of this demo.
 The [verification record](lab-verification.md) separates historical full-suite
 and wheel checks from later focused transport and portability checks. Actual
-browser rendering and hosted CI execution remain unverified.
+browser rendering remains unverified. Hosted Linux/Windows CI passed; see the
+dated record for exact commits. Inspect the separately preregistered
+[native repeats](../research/native-runtime-repeats/README.md) without pooling
+their file-worker method with the original pilot or blocked CLI attempt.
 
 The portfolio demonstrates trust-boundary design, negative controls, safe tool
 gateways, reproducible evidence, deployment packaging, and measured limitations.

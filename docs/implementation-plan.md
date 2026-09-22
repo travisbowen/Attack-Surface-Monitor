@@ -67,6 +67,14 @@ are unchanged; the new script is run from the checkout.
 
 ## Deferred work
 
+September 22 release follow-up: actual Linux/Windows hosted CI passed, MIT license
+selected and published, and a timed terminal demonstration recorded. A separately
+preregistered native file-worker repeat study is documented in
+[its evidence bundle](../research/native-runtime-repeats/README.md). It does not
+replace the blocked Codex CLI attempt or the pending direct-provider benchmark.
+Browser rendering and policy-blocked cleanup remain external limitations; see
+the latest verification record and release guide for final publication status.
+
 Hosted multi-user infrastructure, database, durable cross-run memory, open-ended
 retrieval, human-calibrated prose assessment, and adaptive attacker search remain
 future work. Existing synthetic campaigns do not establish broad model robustness.

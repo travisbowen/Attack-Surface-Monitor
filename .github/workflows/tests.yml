@@ -38,10 +38,16 @@ jobs:
           source_root, = work.iterdir()
           subprocess.run([sys.executable, '-m', 'pytest', '-q',
                           'tests/test_external_agent_transport.py',
+                          'tests/test_codex_runtime_bridge.py',
+                          'tests/test_native_runtime_campaign.py',
                           'tests/ai_triage_lab/test_external_agent.py',
                           'tests/test_pilot_bundle_portability.py'], cwd=source_root, check=True)
           subprocess.run([sys.executable, 'research/astra-runtime-pilot/verify_bundle.py'],
                          cwd=source_root, check=True)
+          subprocess.run([sys.executable, 'scripts/verify_native_runtime_campaign.py',
+                          'research/native-runtime-repeats', '--expected-plan-hash',
+                          'ac87b511c0aa524415eaca88d0d325c16259b74dfa025833fa76b6fe08106e29',
+                          '--require-complete'], cwd=source_root, check=True)
       - name: Verify installed wheel outside checkout
         shell: python {0}
         run: |

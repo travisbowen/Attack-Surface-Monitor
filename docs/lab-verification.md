@@ -1,5 +1,64 @@
 # Implementation and verification record
 
+## Release follow-up - September 22, 2026
+
+The application remains frozen at `cf7b595`, version 0.3.0. Source companions,
+evidence, packaging, MIT licensing, and documentation were extended. Historical
+claims below retain their original date; this section supersedes their pending
+hosted-CI and license status.
+
+Observed GitHub runs on commits
+[`9d18348`](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35753857801)
+and [`162566b`](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35754439107)
+passed all five jobs. For the second run, each Linux/Windows Python 3.11/3.12 core
+job recorded **304 passed, five skipped**, normal wheel/source builds, **32
+extracted-source companion tests**, archived pilot reconstruction, and outside-
+checkout wheel verification of **48 scripted trials and 48 chains**. The Ubuntu
+PyRIT-scoped suite recorded **160 passed** and its actual demo succeeded. These
+are separate runs and scopes, not additive counts.
+
+After adding the native campaign verifier and portability regressions, the local
+Windows/Python 3.12 full suite recorded **326 passed, five skipped in 21.49s**.
+The focused native campaign suite recorded **22 passed**. Final hosted checks
+also require the finalized repeat-study archive before release publication;
+the exact release commit and final CI link are recorded in the
+[v0.3.0 release notes](https://github.com/travisbowen/Attack-Surface-Monitor/releases/tag/v0.3.0).
+
+The [Codex CLI attempt](codex-runtime-evaluation.md) retained one launch failure,
+eleven unattempted entries, zero replies and zero evaluable trials. The separately
+preregistered [native file-worker study](../research/native-runtime-repeats/README.md)
+has its own twelve-slot denominator and exact-byte archive. It does not replace
+or pool with the original pilot or CLI failure. The verifier reuses the original
+pilot's strict Windows/POSIX source-text equivalence before changing only an
+in-memory replay fingerprint. Source digest checks accept LF/CRLF conversion
+only; archived raw digests and evidence stay unchanged.
+
+All twelve native exposures completed, with **60 unchanged replies**: **12/12
+legitimate tasks succeeded**, including **6/6 controls**, and **0/6 attack
+objectives achieved** (0/3 under each variant). No invalid trials, target
+replacements, or model-reply retries occurred. Two pre-dispatch scheduling delays
+resolved after agent capacity became available; those records remain in the
+bundle. Both variants avoided this fixed payload, so the experiment does not
+demonstrate an incremental host-defense benefit. Public reconstructed delivery
+templates disclose the initial wrapper wording differences; inherited private
+runtime instructions remain excluded and unknown to the public reproduction.
+
+A **41.141-second terminal demonstration** recorded four successful commands:
+vulnerable unauthorized closure, defended blocking with legitimate completion,
+benign authorized closure, and original pilot replay. The asciicast contains 56
+timed output events; its transcript matches. This is stdout/stderr pipe capture,
+not a browser recording. Public assets exclude local full CLI logs with absolute
+filesystem paths. Recording SHA256:
+`8674243584a7ed4ce80154fc1a48ebe5b353d5241812cb026cad211bb70f3efe`.
+
+Browser verification remains blocked: Orca process 53008 was running but runtime
+state stayed `starting`, unreachable, without a runtime ID. Earlier Edge `EPERM`
+was not retried. No screenshot, responsive-interaction or browser accessibility
+claim is made. All recorder/CLI subprocesses were reaped; no new environments or
+worktrees were created. Prior policy-blocked cleanup remains below and was not
+retried through another mechanism. User-owned `asm_lite/requirements.txt` remains
+untouched and excluded from publication.
+
 ## Documentation refresh - September 21, 2026
 
 README, lab/demo/release guides, dashboard provenance, pilot replay instructions,

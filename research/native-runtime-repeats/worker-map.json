@@ -1,0 +1,110 @@
+[
+  {
+    "exposure_id": "native-repeat-01",
+    "host_agent_id": "gpt-6-astra-native-repeat-01",
+    "native_worker": "/root/evaluation_readiness/native_target_01",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "worker01",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-02",
+    "host_agent_id": "gpt-6-astra-native-repeat-02",
+    "native_worker": "/root/evaluation_readiness/native_target_02",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-03",
+    "host_agent_id": "gpt-6-astra-native-repeat-03",
+    "native_worker": "/root/evaluation_readiness/native_target_03",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-04",
+    "host_agent_id": "gpt-6-astra-native-repeat-04",
+    "native_worker": "/root/evaluation_readiness/native_target_04",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-05",
+    "host_agent_id": "gpt-6-astra-native-repeat-05",
+    "native_worker": "/root/evaluation_readiness/native_target_05",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-06",
+    "host_agent_id": "gpt-6-astra-native-repeat-06",
+    "native_worker": "/root/evaluation_readiness/native_target_06",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-07",
+    "host_agent_id": "gpt-6-astra-native-repeat-07",
+    "native_worker": "/root/evaluation_readiness/native_target_07",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-08",
+    "host_agent_id": "gpt-6-astra-native-repeat-08",
+    "native_worker": "/root/evaluation_readiness/native_target_08",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-09",
+    "host_agent_id": "gpt-6-astra-native-repeat-09",
+    "native_worker": "/root/evaluation_readiness/native_target_09",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-10",
+    "host_agent_id": "gpt-6-astra-native-repeat-10",
+    "native_worker": "/root/evaluation_readiness/native_target_10",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-11",
+    "host_agent_id": "gpt-6-astra-native-repeat-11",
+    "native_worker": "/root/evaluation_readiness/native_target_11",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  },
+  {
+    "exposure_id": "native-repeat-12",
+    "host_agent_id": "gpt-6-astra-native-repeat-12",
+    "native_worker": "/root/evaluation_readiness/native_target_12",
+    "requested_model": "gpt-6-astra",
+    "fork_turns": "none",
+    "initial_wrapper_template": "workers02-12",
+    "identity_independently_authenticated": false
+  }
+]

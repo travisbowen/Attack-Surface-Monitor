@@ -21,14 +21,17 @@ Advanced campaigns are Python definitions. Root `scenarios/`, `fixtures/` and
 together. `tests/test_package_resources.py` checks exact parity.
 
 The source archive additionally includes documentation, tests, companion Python
-scripts, the changelog, and curated `research/astra-runtime-pilot/` evidence.
+scripts, the changelog, and curated `research/astra-runtime-pilot/` and
+`research/native-runtime-repeats/` evidence.
 Ignored machine-local `out/` evidence and environments are excluded. The wheel's
 commands are `asm-lite`, `ai-triage-lab`, and `ai-triage-experiment`.
 `scripts/run_external_agent.py`, `scripts/offline_external_bridge.py`, and
 `research/astra-runtime-pilot/verify_bundle.py` run from a source checkout or
 extracted source archive; they are not installed wheel commands. See the
 [transport guide](external-agent-transport.md) for bridge setup and fixture/runtime
-provenance rules. No live runtime bridge is bundled.
+provenance rules. The [Codex CLI bridge](codex-runtime-evaluation.md) is included;
+its observed launch was blocked before any model reply. Native runtime evaluation
+uses the separately documented file-worker protocol.
 
 ## Verify source companions with an existing environment
 
@@ -36,8 +39,9 @@ From the source root, use an existing Python environment with project developmen
 dependencies installed. These checks require no new environment or provider:
 
 ```bash
-python -m pytest -q tests/test_external_agent_transport.py tests/ai_triage_lab/test_external_agent.py tests/test_pilot_bundle_portability.py
+python -m pytest -q tests/test_external_agent_transport.py tests/ai_triage_lab/test_external_agent.py tests/test_pilot_bundle_portability.py tests/test_codex_runtime_bridge.py tests/test_native_runtime_campaign.py
 python research/astra-runtime-pilot/verify_bundle.py
+python scripts/verify_native_runtime_campaign.py research/native-runtime-repeats --expected-plan-hash ac87b511c0aa524415eaca88d0d325c16259b74dfa025833fa76b6fe08106e29 --require-complete
 ```
 
 Transport tests exercise scripted subprocess fixtures and host validation.
@@ -86,8 +90,8 @@ python -c "import setuptools; setuptools.setup(script_args=['bdist_wheel','--dis
 ```
 
 A fresh outside-checkout virtual environment installed the resulting wheel.
-The normal PEP 517 build is covered by the configured Linux/Windows CI workflow;
-writing the workflow is not evidence that hosted CI has run. See the final
+The normal PEP 517 build passed actual Linux/Windows CI, including extracted-source
+and outside-checkout wheel verification. See the dated
 [verification record](lab-verification.md) for local evidence and cleanup status.
 
 Direct-provider benchmark findings remain pending provider configuration. The

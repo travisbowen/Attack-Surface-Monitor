@@ -7,6 +7,14 @@ A separate [external-agent runtime pilot](astra-runtime-pilot.md) records actual
 GPT-6 Astra agent replies and synthetic tool effects. It does not use this API
 benchmark protocol, isolate the bare model, or provide provider usage/cost data.
 
+The September 22 [native runtime repeats](../research/native-runtime-repeats/README.md)
+use a separate preregistered file-worker protocol: memory attack/control, two host
+variants, three repetitions each, twelve scheduled fresh workers. Keep its results
+separate from the eight-exposure pilot and the [blocked Codex CLI attempt](codex-runtime-evaluation.md),
+which produced zero replies and zero evaluable trials. None supplies the missing
+direct-provider configuration or establishes an incremental defense benefit
+when both variants avoid the attack.
+
 Create explicit configurations under ignored `out/`, one per model/version or
 sampling configuration. Example for an operator-managed local service:
 

@@ -55,10 +55,12 @@ Commits: `44c9255` and `8da6ce7`.
 - Added bounded automatic subprocess transport and an offline fixture bridge,
   exact-byte capture, failure records, process cleanup, and separately labeled
   fixture/runtime exports. Runtime attestation is an operator assertion, not
-  model authentication; no live bridge or new model measurement is bundled.
+  model authentication; this initial follow-up bundled no live bridge or new
+  model measurement. Later release work is recorded below.
 - Made archived verification portable across Windows/POSIX path fingerprints
   while requiring strict frozen-source equivalence before replaying a copied
-  session. Tests simulate conventions; actual Linux execution is not claimed.
+  session. Initial tests simulated conventions; actual Linux/Windows hosted CI
+  subsequently passed as recorded below.
 
 Application version and frozen source remain unchanged. Companion scripts, tests,
 and curated evidence are source-distribution content, not new wheel commands.
@@ -66,3 +68,19 @@ See [release reproduction](docs/local-release.md),
 [transport protocol](docs/external-agent-transport.md),
 [pilot limitations](docs/astra-runtime-pilot.md), and
 [verification history](docs/lab-verification.md).
+
+### Release verification follow-up - September 22, 2026
+
+- Selected MIT licensing and included the license in both distributions.
+- Ran actual GitHub CI on Linux/Windows Python 3.11/3.12, including normal builds,
+  extracted-source checks, archived replay, and isolated installed-wheel trials.
+  The optional Ubuntu PyRIT integration and demo also passed.
+- Added a strict Codex CLI bridge and retained its pre-reply launch failure.
+- Added a separately preregistered native Astra repeat study, exact file-delivered
+  replies, matched controls, and independent reconstruction. Its method and
+  denominators remain separate from the original pilot and blocked CLI attempt.
+- Added a timed terminal demonstration and public-release instructions. Browser
+  rendering remains unverified; the recording is process output, not browser video.
+- Extended source archives and CI to retain and verify both research bundles.
+  Cross-platform replay requires frozen source equivalence; source-byte digest
+  checks permit only LF/CRLF conversion, and archived evidence is never rewritten.

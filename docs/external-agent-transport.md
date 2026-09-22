@@ -30,6 +30,12 @@ this script supplies neither a provider account nor credentials. Inherited
 runtime instructions and tools still apply. A direct-provider experiment remains
 a separate protocol with explicit provider configuration and spending limits.
 
+The bundled [Codex CLI bridge](codex-runtime-evaluation.md) connects this transport
+to an existing authorized CLI session. Its recorded launch failed before any
+model reply. A separately preregistered [native repeat study](../research/native-runtime-repeats/README.md)
+uses ordinary file-worker delivery instead; these are distinct methods with
+separate accounting and must not be pooled with the original pilot.
+
 ## Bridge protocol
 
 The bridge reads one complete UTF-8 JSON envelope from stdin, ending at EOF. It

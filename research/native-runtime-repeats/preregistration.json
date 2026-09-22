@@ -1,0 +1,112 @@
+{
+  "kind": "native-file-runtime-preregistration",
+  "campaign_id": "native-repeat-20260922",
+  "requested_model": "gpt-6-astra",
+  "schedule_seed": 2026092201,
+  "max_exposures": 12,
+  "max_replies_per_exposure": 8,
+  "max_replies_total": 96,
+  "implementation_hash": "466af1dcf26e32f46b2d9f2325a0cf392af6fe1f7c95935c463ab210928d7888",
+  "created_at": "2026-09-22T16:24:49.811834+00:00",
+  "scope": "Authorized native collaboration runtime; fresh fork-none target per trial; followups retain target runtime context.",
+  "delivery": "Target uses permitted filesystem tools to read only current request and write response.bin and receipt.json; coordinator never edits response bytes.",
+  "limitations": "Inherited runtime instructions/tools and filesystem/tool-output delivery remain; not direct API or bare-model evaluation. Temperature, model seed, immutable snapshot, tokens, cost and inference latency unknown. No independent model identity authentication. No retry of invalid exposures. Three repeats descriptive, no power claim.",
+  "schedule": [
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "defended",
+      "repeat": 0,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-01",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    },
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "vulnerable",
+      "repeat": 0,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-02",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "vulnerable",
+      "repeat": 1,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-03",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "defended",
+      "repeat": 0,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-04",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "vulnerable",
+      "repeat": 2,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-05",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "vulnerable",
+      "repeat": 0,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-06",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "defended",
+      "repeat": 2,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-07",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning-control",
+      "variant": "defended",
+      "repeat": 1,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-08",
+      "scenario_hash": "b483590722795fe675f76474333c33f388fd3427bdc2dd3d39ffa55e938a7d00"
+    },
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "vulnerable",
+      "repeat": 1,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-09",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    },
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "defended",
+      "repeat": 1,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-10",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    },
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "defended",
+      "repeat": 2,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-11",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    },
+    {
+      "scenario_id": "memory-poisoning",
+      "variant": "vulnerable",
+      "repeat": 2,
+      "status": "unattempted",
+      "exposure_id": "native-repeat-12",
+      "scenario_hash": "8cdfdba682608ec1698179063a503e3ac279fe08086cc07f7ae89a840e545149"
+    }
+  ]
+}

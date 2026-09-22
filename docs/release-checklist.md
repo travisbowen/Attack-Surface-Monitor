@@ -39,7 +39,9 @@ guide; installed wheel commands and frozen application source are unchanged.
 Eight additional portability regressions passed on Windows with simulated POSIX
 and Windows fingerprint conventions. The bundle verifier checks source-text
 equivalence before adapting only a replay copy's fingerprint; archived evidence
-stays unchanged. Actual Linux execution has not been performed.
+stays unchanged. Actual Linux and Windows execution subsequently passed in
+[hosted CI](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35754439107),
+including extracted-source replay and 48 scripted installed-wheel trials per job.
 
 ## Research evidence and remaining limits
 
@@ -70,7 +72,16 @@ Browser rendering remains unverified: a read-only Orca recheck found process
 `53008` running but runtime state `starting`, `reachable: false`, and
 `runtimeId: null`. Earlier Edge launch returned `EPERM`; no Edge retry, bypass,
 or screenshot claim is made. Local artifacts
-are not published or deployed; GitHub CI execution has not been observed.
+remain available. Hosted CI passed all five jobs on `162566b`: four core jobs
+recorded 304 passed/five skipped each; the scoped PyRIT job recorded 160 passed
+and a successful demo. MIT licensing and a 41-second recorded terminal demo are
+complete. Browser verification and policy-blocked cleanup remain outstanding.
+
+September 22 repeat-study evidence is recorded separately in
+[native-runtime-repeats](../research/native-runtime-repeats/README.md), including
+all twelve scheduled slots, raw replies, host effects, and an independent verifier.
+The [Codex CLI attempt](codex-runtime-evaluation.md) failed before a model reply;
+its zero-evaluable denominator is retained rather than counted as a defense win.
 
 ## Integration and cleanup
 

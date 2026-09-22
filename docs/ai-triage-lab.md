@@ -67,13 +67,18 @@ python research/astra-runtime-pilot/verify_bundle.py
 Replay checks frozen source equivalence across Windows/POSIX relative-path
 fingerprints and adjusts only an in-memory replay copy. Archived replies,
 sessions, results, and evidence heads remain unchanged. Portability regression
-tests simulate both conventions on Windows; actual Linux execution is unverified.
+tests simulate both conventions; actual Linux/Windows hosted CI also passed
+archived reconstruction and installed-wheel verification. See the dated
+[verification record](lab-verification.md).
 
 The [automatic transport](external-agent-transport.md) drives that session
 protocol through an operator-supplied subprocess bridge. It is a source-checkout
 script, not an installed wheel command. It captures exact response bytes, applies
 time/output/turn bounds, attempts process-tree cleanup, and preserves failures
-without automatic retries. A real runtime bridge is not bundled.
+without automatic retries. The bundled [Codex CLI bridge](codex-runtime-evaluation.md)
+recorded a launch failure before any reply. The separate
+[native repeat study](../research/native-runtime-repeats/README.md) uses file-worker
+delivery and its own preregistered denominator.
 
 Offline fixture example, from repository root in PowerShell:
 

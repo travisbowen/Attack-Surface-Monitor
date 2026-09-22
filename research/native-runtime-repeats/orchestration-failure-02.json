@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-09-22T16:38:14.493500+00:00",
+  "exposure_id": "native-repeat-05",
+  "turn": 0,
+  "action": "collaboration.spawn_agent",
+  "requested_worker": "/root/evaluation_readiness/native_target_05",
+  "error": "collab spawn failed: agent thread limit reached",
+  "model_response_received": false,
+  "host_submit_attempted": false,
+  "model_reply_retry": false,
+  "interpretation": "Predispatch scheduling failure; active-slot exhaustion, no target created."
+}

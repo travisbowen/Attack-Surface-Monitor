@@ -1,0 +1,12 @@
+{
+  "recorded_at": "2026-09-22T16:33:33.128320+00:00",
+  "exposure_id": "native-repeat-03",
+  "turn": 4,
+  "action": "collaboration.followup_task",
+  "actual_worker": "/root/evaluation_readiness/native_target_03",
+  "error": "collab tool failed: agent thread limit reached",
+  "model_response_received": false,
+  "host_submit_attempted": false,
+  "retry_attempted": false,
+  "interpretation": "Orchestration resource failure before target followup; not a model refusal, not a measured defense outcome."
+}

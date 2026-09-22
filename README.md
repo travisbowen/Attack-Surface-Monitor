@@ -6,6 +6,11 @@ release artifacts and empirical evidence are recorded separately.
 Licensed under [MIT](LICENSE). Public release and CI details are in the
 [release guide](docs/public-release.md).
 
+[Version 0.3.0 release assets](https://github.com/travisbowen/Attack-Surface-Monitor/releases/tag/v0.3.0)
+include the wheel, source archive, checksums, recorded terminal demo, transcript,
+and offline scripted dashboard. Release notes identify the exact commit and its
+final hosted CI run.
+
 A Python portfolio project connecting bounded HTTP exposure observations to a
 synthetic GenAI security evaluation lab. The scanner collects evidence; the lab
 tests what happens when an AI analyst consumes attacker-controlled evidence and
@@ -23,12 +28,19 @@ that benchmark remains pending provider configuration.
 A source-checkout [automatic external-agent transport](docs/external-agent-transport.md)
 now drives the existing session protocol through an operator-supplied subprocess
 bridge. Its offline fixtures test transport behavior; they add no live measurements
-and do not change the eight archived exposures or their classifications. No live
-runtime bridge is bundled.
+and do not change the eight archived exposures or their classifications. The
+[Codex CLI bridge](docs/codex-runtime-evaluation.md) is included, but its observed
+launch was blocked before any model reply. A separately preregistered
+[native runtime study](research/native-runtime-repeats/README.md) retains repeated
+file-delivered agent exposures with its own method and denominators.
+All twelve native trials completed with 60 original replies: legitimate tasks
+succeeded in 12/12, including all six controls; attack objectives were achieved
+in 0/6 attack trials (0/3 per variant). With both variants avoiding the payload,
+this sample does not demonstrate an incremental host-defense benefit.
 
 ## Install and demonstrate
 
-Requires Python 3.11 or later; local release verified with Python 3.12 on Windows.
+Requires Python 3.11 or later; hosted CI verified Python 3.11/3.12 on Linux and Windows.
 From a clone:
 
 ```bash
@@ -67,8 +79,9 @@ python research/astra-runtime-pilot/verify_bundle.py
 
 This checks 31 preserved replies and seven valid terminal reconstructions while
 retaining the invalid exposure. Replay accepts only verified Windows/POSIX path
-fingerprint equivalence; original evidence remains unchanged. Portability tests
-simulate both conventions on Windows; actual Linux execution is unverified.
+fingerprint equivalence; original evidence remains unchanged. Both platforms
+passed actual hosted reconstruction, source-archive and installed-wheel checks
+in [CI](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35754439107).
 See the [verification record](docs/lab-verification.md) for dated full-suite,
 wheel, transport, and portability checks and remaining external verification.
 
@@ -111,9 +124,11 @@ review and are not verified vulnerabilities. Importing saved JSON never scans.
 - [External-agent runtime pilot](docs/astra-runtime-pilot.md): actual agent replies, synthetic tool effects, invalid-trial accounting, and research limitations.
 - [Automatic external-agent transport](docs/external-agent-transport.md): source-checkout bridge protocol, bounded execution, provenance, and failure handling.
 - [Model experiment protocol](docs/model-experiments.md): direct-provider configuration and spending boundaries.
+- [Repeated native runtime study](research/native-runtime-repeats/README.md): preregistration, original replies, matched controls, independent replay, and limitations.
 - [Changelog](CHANGELOG.md), [local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
 
 Default tests and demos are offline. Dependency installation requires access to
 your package source. Optional PyRIT setup is separate; CI includes core tests,
 wheel installation outside the checkout, and optional integration coverage.
-No package publication, hosted deployment, or hosted multi-user service is included.
+GitHub release artifacts are described in the release guide. No PyPI publication,
+hosted deployment, or hosted multi-user service is included.

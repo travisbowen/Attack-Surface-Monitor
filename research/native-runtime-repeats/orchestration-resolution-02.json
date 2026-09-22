@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-09-22T16:40:06.246483+00:00",
+  "event": "orchestration-failure-02.json",
+  "resolution": "Parent asked pending audits to finalize. Both reported completed; original never-dispatched target05 spawned against unchanged request.",
+  "model_reply_retries": 0,
+  "target_replacements": 0,
+  "failed_predispatch_spawn_calls": 1,
+  "successful_initial_target_spawns": 1
+}

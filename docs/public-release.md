@@ -3,10 +3,13 @@
 The repository is public at
 [travisbowen/Attack-Surface-Monitor](https://github.com/travisbowen/Attack-Surface-Monitor).
 Version 0.3.0 combines a bounded attack-surface scanner with an offline synthetic
-AI security triage lab. Release publication, licensing, and hosted CI status must
-be checked against the actual repository and release records before distributing
-artifacts. This guide does not assert that a GitHub release or package-index
-publication has completed.
+AI security triage lab, licensed under [MIT](../LICENSE). Hosted Linux/Windows CI
+passed on September 22, 2026 for commits `9d18348` and `162566b`. The
+[v0.3.0 release notes](https://github.com/travisbowen/Attack-Surface-Monitor/releases/tag/v0.3.0)
+record the final release commit and CI run, including repeated-study evidence.
+Download its wheel/source archive, checksums, terminal recording/transcript, and
+offline scripted dashboard; `ASSET-GUIDE.md` distinguishes their evidence scopes. No PyPI
+publication or hosted service deployment is part of this release.
 
 ## Release notes
 
@@ -20,6 +23,15 @@ publication has completed.
 - Source companions provide bounded external-agent transport and deterministic
   verification of archived runtime-pilot evidence. Companions are included in
   the source archive; they are not installed wheel commands.
+- A separate [native runtime study](../research/native-runtime-repeats/README.md)
+  preregisters twelve fresh Astra file-worker exposures, original reply bytes,
+  matched controls, and independent host replay. All twelve completed with 60
+  original replies, 12/12 legitimate successes, and 0/6 attack objectives achieved
+  (0/3 per variant). This does not establish incremental defense benefit. The blocked
+  [Codex CLI attempt](codex-runtime-evaluation.md) produced no evaluable trials.
+- A recorded [terminal demonstration](portfolio-demo.md) shows actual scripted
+  vulnerable/defended effects, a benign control, and archived evidence replay.
+  Its asciicast and transcript are timed process output, not browser video.
 
 The real-agent pilot contains **eight exposures, seven valid terminal trials,
 and one invalid relay retained without retry**. Legitimate tasks succeeded in
@@ -28,6 +40,12 @@ succeeded in 0/4 valid attack trials. Thirty-one original replies are preserved.
 This small synthetic pilot is not a robustness estimate or direct-provider
 benchmark. Inherited instructions/tools remained available, and provider
 snapshot, sampling parameters, usage, cost, and inference latency are unknown.
+
+Hosted [CI at `162566b`](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35754439107)
+passed all five jobs: Linux/Windows Python 3.11/3.12 each recorded **304 passed,
+five skipped**, and the Ubuntu PyRIT-scoped suite recorded **160 passed** plus its
+actual demo. Each core job also passed extracted-source tests, archived replay,
+and 48 scripted installed-wheel trials with valid chains.
 
 Historical frozen-application verification recorded **272 tests passed** with
 optional PyRIT, or **267 passed and five skipped** in the core environment.
@@ -66,7 +84,7 @@ installs the wheel in a separate environment outside the checkout. Artifacts
 and installed verification evidence are uploaded before disposable verification
 directories are removed. Workflow token permissions are `contents: read`.
 
-A configured workflow is not an observed successful run. Check the
+Observed successful runs are linked above. Check the
 [Actions page](https://github.com/travisbowen/Attack-Surface-Monitor/actions)
 for the exact release commit and all required jobs. Publish artifacts built
 from that reviewed commit after its checks pass and licensing is recorded.

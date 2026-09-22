@@ -14,3 +14,4 @@ include pytest.ini
 
 # Curated synthetic runtime-pilot evidence; excludes ignored machine-local out/.
 recursive-include research/astra-runtime-pilot *.md *.json *.jsonl *.txt *.py *.html
+recursive-include research/native-runtime-repeats *.md *.json *.jsonl *.bin *.html
