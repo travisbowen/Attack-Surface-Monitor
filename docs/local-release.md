@@ -3,6 +3,9 @@
 Distribution: `asm-ai-triage-lab` 0.3.0, Python 3.11+. This guide builds local
 artifacts; it does not publish a package. No software license is declared in the
 repository; choose appropriate licensing before public package distribution.
+Release history is in [CHANGELOG.md](../CHANGELOG.md). Application source remains
+frozen at `cf7b595`; later transport, verifier, documentation, and evidence work
+belongs to the same 0.3.0 release.
 
 ```bash
 python -m pip install ".[dev]"
@@ -16,6 +19,34 @@ fixtures, the scanner Jinja template, and Python-contained dashboard CSS/JS.
 Advanced campaigns are Python definitions. Root `scenarios/`, `fixtures/` and
 `templates/` remain convenient source examples; bundled copies must be updated
 together. `tests/test_package_resources.py` checks exact parity.
+
+The source archive additionally includes documentation, tests, companion Python
+scripts, the changelog, and curated `research/astra-runtime-pilot/` evidence.
+Ignored machine-local `out/` evidence and environments are excluded. The wheel's
+commands are `asm-lite`, `ai-triage-lab`, and `ai-triage-experiment`.
+`scripts/run_external_agent.py`, `scripts/offline_external_bridge.py`, and
+`research/astra-runtime-pilot/verify_bundle.py` run from a source checkout or
+extracted source archive; they are not installed wheel commands. See the
+[transport guide](external-agent-transport.md) for bridge setup and fixture/runtime
+provenance rules. No live runtime bridge is bundled.
+
+## Verify source companions with an existing environment
+
+From the source root, use an existing Python environment with project development
+dependencies installed. These checks require no new environment or provider:
+
+```bash
+python -m pytest -q tests/test_external_agent_transport.py tests/ai_triage_lab/test_external_agent.py tests/test_pilot_bundle_portability.py
+python research/astra-runtime-pilot/verify_bundle.py
+```
+
+Transport tests exercise scripted subprocess fixtures and host validation.
+Portability tests simulate Windows/POSIX fingerprint conventions; they do not
+establish an actual Linux run. The bundle verifier checks archived evidence and
+reconstructs seven valid terminal trials without changing original artifacts or
+calling a model. It first verifies strict equivalence to frozen application source
+under both path conventions. These source checks supplement installed-wheel
+verification below; they do not add live pilot trials or prove model robustness.
 
 ## Verify outside the checkout
 

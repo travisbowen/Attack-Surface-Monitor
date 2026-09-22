@@ -20,7 +20,8 @@ that benchmark remains pending provider configuration.
 A source-checkout [automatic external-agent transport](docs/external-agent-transport.md)
 now drives the existing session protocol through an operator-supplied subprocess
 bridge. Its offline fixtures test transport behavior; they add no live measurements
-and do not change the eight archived exposures or their classifications.
+and do not change the eight archived exposures or their classifications. No live
+runtime bridge is bundled.
 
 ## Install and demonstrate
 
@@ -49,10 +50,24 @@ templates, and self-contained dashboard assets are included in the wheel.
 | Advanced campaigns | Trial-local memory, poisoned retrieval and tool descriptions, staged multi-turn manipulation, matched controls |
 | `ai-triage-experiment` | No-network preflight, repeated randomized model comparisons, usage/budget tracking and incomplete-trial denominators |
 | Optional PyRIT 1.1 | Single-prompt `PromptSendingAttack` bridge with the lab's business-effect evaluator |
+| Source-only agent transport | Bounded subprocess exchange, exact response-byte capture, process cleanup, and explicit failure evidence without automatic retries |
 
 The vulnerable variant is deliberate. Prompt-only equals vulnerable under the
 scripted adapter because scripted actions do not interpret prompts. Defended
 results establish the tested host policy, not universal prompt-injection immunity.
+
+Verify the archived live pilot from the checkout, without model calls:
+
+```bash
+python research/astra-runtime-pilot/verify_bundle.py
+```
+
+This checks 31 preserved replies and seven valid terminal reconstructions while
+retaining the invalid exposure. Replay accepts only verified Windows/POSIX path
+fingerprint equivalence; original evidence remains unchanged. Portability tests
+simulate both conventions on Windows; actual Linux execution is unverified.
+See the [verification record](docs/lab-verification.md) for dated full-suite,
+wheel, transport, and portability checks and remaining external verification.
 
 ## Scanner usage and boundaries
 
@@ -93,7 +108,7 @@ review and are not verified vulnerabilities. Importing saved JSON never scans.
 - [External-agent runtime pilot](docs/astra-runtime-pilot.md): actual agent replies, synthetic tool effects, invalid-trial accounting, and research limitations.
 - [Automatic external-agent transport](docs/external-agent-transport.md): source-checkout bridge protocol, bounded execution, provenance, and failure handling.
 - [Model experiment protocol](docs/model-experiments.md): direct-provider configuration and spending boundaries.
-- [Local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
+- [Changelog](CHANGELOG.md), [local release guide](docs/local-release.md), [verification record](docs/lab-verification.md), [implementation plan](docs/implementation-plan.md).
 
 Default tests and demos are offline. Dependency installation requires access to
 your package source. Optional PyRIT setup is separate; CI includes core tests,

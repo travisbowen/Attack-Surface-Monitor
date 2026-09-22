@@ -1,6 +1,7 @@
 # ASM AI Triage Lab
 
 Python 3.11+. Install with `python -m pip install .` from the repository root.
+Use `python -m pip install ".[dev]"` to include the test dependencies.
 Installed `ai-triage-lab` commands work from any directory. The source examples
 below use repository-relative fixture paths; core runtime includes httpx and Jinja2.
 
@@ -47,7 +48,50 @@ declared title/header field; the original imported row and overlay are retained
 separately in evidence. This is an attack experiment, not automatic vulnerability
 classification of the imported asset. Files are never fetched as URLs.
 
-## Real-model experiments
+## External-agent runtime pilot and transport
+
+The [Astra runtime pilot](astra-runtime-pilot.md) records actual external-agent
+behavior on synthetic host sessions: eight exposures, seven evaluable trials,
+one invalid relay, and 31 preserved replies. Legitimate tasks succeeded in 7/7
+evaluable trials; no attack objective succeeded in the four valid attack trials.
+Inherited runtime instructions/tools and unavailable provider metadata limit the
+claim. This is not a direct API benchmark or evidence of broad robustness.
+
+From the checkout, verify previously archived replies and synthetic effects
+without making model calls:
+
+```bash
+python research/astra-runtime-pilot/verify_bundle.py
+```
+
+Replay checks frozen source equivalence across Windows/POSIX relative-path
+fingerprints and adjusts only an in-memory replay copy. Archived replies,
+sessions, results, and evidence heads remain unchanged. Portability regression
+tests simulate both conventions on Windows; actual Linux execution is unverified.
+
+The [automatic transport](external-agent-transport.md) drives that session
+protocol through an operator-supplied subprocess bridge. It is a source-checkout
+script, not an installed wheel command. It captures exact response bytes, applies
+time/output/turn bounds, attempts process-tree cleanup, and preserves failures
+without automatic retries. A real runtime bridge is not bundled.
+
+Offline fixture example, from repository root in PowerShell:
+
+```powershell
+$bridgePython = (Get-Command python).Source
+$fixtureBridge = (Resolve-Path scripts/offline_external_bridge.py).Path
+python scripts/run_external_agent.py out/transport-fixture --scenario unauthorized-closure --variant defended --agent-id offline-fixture --mode dry-fixture -- $bridgePython $fixtureBridge
+```
+
+The output directory must be new. Inspect `transport.json`, `session.json`,
+`turns/`, and `fixture-result.json`. Preserve the dry wrapper's `measurement: false`:
+its nested host labels do not make it a live measurement. Exit zero means host
+execution completed; the fixed fixture reply does not complete a legitimate
+security-analysis task. Consult the transport guide before supplying a real
+bridge: the process inherits operator permissions, and attestation alone does
+not prove model identity. The fixture leaves the archived pilot counts unchanged.
+
+## Direct-provider model experiments
 
 Copy `fixtures/model-config.example.json` to your own configuration file. Set an
 explicit tool-capable model and full Chat Completions endpoint. Loopback HTTP is
@@ -177,5 +221,8 @@ See [advanced campaigns](advanced-campaigns.md). Use `--suite advanced` or `--su
 Compare saved runs with `ai-triage-lab compare RUN_DIR_A RUN_DIR_B --out NEW_DIR`;
 the [offline dashboard](results-dashboard.md) separates scripted/model configurations.
 See [model experiments](model-experiments.md) for randomized repeated comparisons
-and no-network preflight. Live model results remain pending. Subsequent work: durable
-cross-run memory, human-calibrated prose assessment, and upstream contributions.
+and no-network preflight. Repeated direct-provider measurements remain pending
+explicit provider/model configuration and spending limits; the separate archived
+runtime pilot is available above. Subsequent work: durable cross-run memory,
+human-calibrated prose assessment, and upstream contributions. See the
+[verification record](lab-verification.md) for check scope and remaining limits.

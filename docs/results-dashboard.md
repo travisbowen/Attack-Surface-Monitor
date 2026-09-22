@@ -27,6 +27,10 @@ Accounting rules:
 - Scripted harness results establish harness behavior, never model robustness.
 - Model labels name configured transports. Reports cannot independently attest
   that an imported artifact actually called a provider.
+- External-agent runtime results form distinct cohorts from scripted and direct
+  provider runs. The [archived pilot comparison](../research/astra-runtime-pilot/comparison/report.html)
+  includes seven valid trials; invalid relay 04 remains outside scored rows and
+  is disclosed in the [pilot record](astra-runtime-pilot.md).
 - Runs, model settings/endpoints, implementation hashes and framework identities
   form separate cohorts. Their rates are never averaged together.
 - Scenario matrix rows also separate fixture hashes. Compare matching fixtures
@@ -43,12 +47,23 @@ Accounting rules:
   attempted, blocked and executed action counts include observed incomplete trials.
 - Cost, elapsed-time and token coverage are explicit. Partial cost is reported as
   partial; unknown total cost is not zero. Wall time includes harness overhead.
+- External-agent inference latency, token usage, and cost remain unknown.
+  `reconstruction_seconds` measures deterministic host replay, not model latency;
+  request/receipt timestamps also include orchestration delay.
 - Evidence-chain verification checks consistency with the stored head, not external
   authenticity. A missing or modified chain is visibly marked.
 
 `summary.json` schema version 2 contains per-cohort `groups`. For a single run and
 configuration, the compatible `variants` mapping remains populated; for mixed
 cohorts it is empty to prevent accidental pooled model rates.
+
+The source companion [transport runner](external-agent-transport.md) writes
+`fixture-result.json` for `dry-fixture` mode, with `measurement: false` and a
+nested `host_result`. That nested result retains legacy host runtime labels:
+do not extract it into dashboard `result.json` files or import it as live runtime
+evidence. Runtime exports require their transport manifest and provenance records;
+operator attestation and `measurement: true` do not independently authenticate
+model identity or establish an evaluable trial.
 
 Security: all model/scan text is HTML-escaped, including attributes and evidence.
 No evidence becomes a URL or executable script. The only script/style blocks are

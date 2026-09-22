@@ -1,5 +1,20 @@
 # Implementation and verification record
 
+## Documentation refresh - September 21, 2026
+
+README, lab/demo/release guides, dashboard provenance, pilot replay instructions,
+and the changelog now reflect the completed 0.3.0 work and source-only companions.
+Checked 56 local links across 17 Markdown files and the documented transport,
+comparison, and experiment CLI help. No new runtime or model tests were needed
+for these documentation changes; the test results below retain their original scope.
+
+Rebuilt the wheel and source archive. All 43 wheel code/resource members match
+the previously verified wheel byte for byte; only README metadata and its RECORD
+entry changed. The source archive includes the changelog and all 100 curated
+evidence files. Archive parity and artifact hashes are recorded locally in
+`out/release/documentation-verification.json`. No new environments or background
+workers were created. Existing cleanup restrictions below remain unchanged.
+
 ## Automatic transport follow-up - September 21, 2026
 
 Added source-checkout `scripts/run_external_agent.py` and the offline

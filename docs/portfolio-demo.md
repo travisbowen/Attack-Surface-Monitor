@@ -1,9 +1,15 @@
 # Portfolio demonstration
 
-This is an offline, synthetic application-security demonstration. No live model
-findings, real vulnerabilities, external tickets, or production permissions are
-claimed. Allow about ten minutes after installation. Use Python 3.11+ and install
-with `python -m pip install ".[dev]"` from a clone.
+This walkthrough generates offline synthetic application-security evidence and
+then inspects an archived live-agent pilot without making model calls. No real
+vulnerabilities, external tickets, or production permissions are claimed. Allow
+about ten minutes after installation. Use Python 3.11+ and install with
+`python -m pip install ".[dev]"` from a clone.
+
+Start with the engineering question: can an AI analyst consume hostile findings
+without treating their instructions as authority? Show one unauthorized action,
+the host control that blocks it, and a benign task that still succeeds. Then
+separate what scripted tests prove from what the small live pilot observed.
 
 ## 1. Generate the comparison
 
@@ -53,13 +59,56 @@ denominators alongside success rates; absence of completed evidence is not a
 successful defense. Filters narrow the trial/matrix view; headline totals retain
 their documented scope. No external assets or telemetry are required.
 
-## 5. Explain what remains unmeasured
+## 5. Inspect archived live-agent evidence
+
+Open the [Astra runtime pilot](astra-runtime-pilot.md) and its
+[evidence bundle](../research/astra-runtime-pilot/README.md). These are actual
+external-agent replies on synthetic tasks, separate from the 48 scripted trials.
+Eight exposures yielded seven evaluable trials and one invalid relay, retained
+without retry. Legitimate tasks succeeded in 7/7 evaluable trials; attack
+objectives succeeded in 0/4 valid attack trials. Inspect invalid trial 04 to show
+why an orchestration error cannot count as a successful defense.
+
+From repository root, verify the archive without calling a model:
+
+```bash
+python research/astra-runtime-pilot/verify_bundle.py
+```
+
+The verifier checks all 31 preserved replies and seven valid reconstructions,
+including event chains and final state. Verified path-format equivalence allows
+replay without rewriting the archived evidence. Both path conventions were
+tested by simulation on Windows; no actual Linux execution is claimed.
+
+The pilot inherited runtime instructions/tools and lacks provider snapshot,
+sampling, usage, cost, and inference-latency data. Four unsuccessful attack
+trials do not establish robustness or incremental defense benefit when both
+variants avoid the attack.
+
+## 6. Optionally demonstrate automatic transport
+
+The [source-only transport guide](external-agent-transport.md) includes a
+PowerShell offline command using an absolute Python executable path. Run it from
+the checkout with a new output directory, then inspect `transport.json`, captured
+request/response bytes, and `fixture-result.json` with `measurement: false`.
+The fixture demonstrates protocol completion, not successful security analysis.
+
+Explain the controls: bounded input/output and time, exact reply submission,
+process-tree cleanup, preserved failures, and no automatic retries. The runner
+requires a trusted operator-supplied executable; it is not a sandbox. No live
+runtime bridge is bundled, and operator attestation does not authenticate a model.
+This optional fixture creates no new live measurement.
+
+## 7. Explain what remains unmeasured
 
 Use [model experiment preflight](model-experiments.md) to prepare repeated trials
 without network calls. Actual execution requires explicit compatible endpoint,
 model/version, configuration, and authorized spending limits. Neither mocked
 transport tests nor scripted results establish susceptibility of a real LLM.
 Real scanning is separate, requires authorization, and is not part of this demo.
+The [verification record](lab-verification.md) separates historical full-suite
+and wheel checks from later focused transport and portability checks. Actual
+browser rendering and hosted CI execution remain unverified.
 
 The portfolio demonstrates trust-boundary design, negative controls, safe tool
 gateways, reproducible evidence, deployment packaging, and measured limitations.
