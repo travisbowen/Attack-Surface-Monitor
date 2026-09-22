@@ -84,3 +84,13 @@ browser/server process started and no screenshots were captured. Real-browser
 filtering, sorting, expandable evidence, responsive rendering and console checks
 remain pending. Exact local attempt evidence and the unexecuted browser harness
 are preserved under ignored `out/browser-verification/`.
+
+Rechecked September 22, 2026 using the current `orca skills get orca-cli` guide:
+Orca process `53008` was running and responding, but `orca status --json` still
+reported runtime `starting`, `reachable: false`, and `runtimeId: null`. No browser
+tab, server, screenshot, or recording was created. The blocked Edge launch was
+not retried, and the existing Orca app was not restarted. Dated status and
+process evidence are preserved in `out/browser-verification-20260922/`.
+Real-browser interaction, responsive layout, console and accessibility checks
+remain unverified. The archived pilot HTML linked above is a locally viewable
+interactive demonstration, not a captured video or proof of browser verification.

@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   core:
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         python: ['3.11', '3.12']
@@ -23,6 +25,23 @@ jobs:
       - run: python -m pip install ".[dev]"
       - run: python -m pytest -q
       - run: python -m build --outdir out/release
+      - name: Verify source archive companions and frozen pilot evidence
+        shell: python {0}
+        run: |
+          import os, pathlib, subprocess, sys, tarfile
+          repo = pathlib.Path.cwd()
+          work = pathlib.Path(os.environ['RUNNER_TEMP']) / 'source-verification'
+          work.mkdir()
+          archive = next((repo / 'out/release').glob('*.tar.gz'))
+          with tarfile.open(archive) as source:
+              source.extractall(work, filter='data')
+          source_root, = work.iterdir()
+          subprocess.run([sys.executable, '-m', 'pytest', '-q',
+                          'tests/test_external_agent_transport.py',
+                          'tests/ai_triage_lab/test_external_agent.py',
+                          'tests/test_pilot_bundle_portability.py'], cwd=source_root, check=True)
+          subprocess.run([sys.executable, 'research/astra-runtime-pilot/verify_bundle.py'],
+                         cwd=source_root, check=True)
       - name: Verify installed wheel outside checkout
         shell: python {0}
         run: |
@@ -49,7 +68,19 @@ jobs:
             ${{ runner.temp }}/installed-wheel/scanner
             ${{ runner.temp }}/installed-wheel/preflight
             ${{ runner.temp }}/installed-wheel/wheel-verification.json
+      - name: Remove disposable verification environments
+        if: always()
+        shell: python {0}
+        run: |
+          import os, pathlib, shutil
+          root = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
+          for name in ('installed-wheel', 'source-verification'):
+              target = root / name
+              if target.exists():
+                  assert target.resolve().parent == root
+                  shutil.rmtree(target)
   pyrit:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

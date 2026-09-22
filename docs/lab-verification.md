@@ -184,11 +184,11 @@ No visual-runtime screenshot claim is made.
 
 All agents reported their task processes stopped. Automatic approval review
 rejected cleanup of the new wheel-verification workspace
-`C:\Users\Travis\Desktop\Ai Projects\asm-portfolio-wheel-verification`, project
+the sibling `asm-portfolio-wheel-verification` workspace, project
 `build/`, and `asm_ai_triage_lab.egg-info/`, stating `blocked by policy`.
 Those directories remain. Separate OS access-denied remnants remain at
 `out/release/.tmp-4r2nmcs4` and
-`C:\Users\Travis\AppData\Local\Temp\tmpxs634ay5`. Older cleanup leftovers are
+`$env:TEMP\tmpxs634ay5`. Older cleanup leftovers are
 recorded below. No permission changes or deletion workaround were attempted.
 
 ## Initial MVP verification history
@@ -283,6 +283,6 @@ in `scripts/cleanup-task-setup.ps1` remain available for manual cleanup. The scr
 supports `-WhatIf`, validates each resolved path, and preserves verified reports.
 
 Failed pip setup also reported inaccessible task-created directories under
-`C:\Users\Travis\AppData\Local\Temp`: `pip-build-tracker-75yv7dnk`,
+`$env:TEMP`: `pip-build-tracker-75yv7dnk`,
 `pip-unpack-alm9nsct`, and `pip-download-q2fykp8v`. Their current contents were not
 verified or removed. No broad cleanup of the user's temporary directory occurred.
