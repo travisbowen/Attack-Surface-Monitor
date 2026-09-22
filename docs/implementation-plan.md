@@ -28,6 +28,40 @@ evidence, or abusing tools?
   task processes and workers finished; no new worktrees or environments remain.
   User-owned untracked `asm_lite/requirements.txt` stays untouched and unpublished.
 
+## Cleanup checkpoint - September 22, 2026
+
+After the next-step memory commit, the user explicitly requested cleanup of
+running project tasks and workspaces. Read-only inspection found:
+
+- Orca still reports its runtime unreachable. Scoped Windows process-command-line
+  inspection returned `Access denied`; other sessions cannot be safely identified
+  or stopped from this environment. Do not infer that every project process is
+  stopped merely because this task's owned commands and agents finished.
+- Six sibling worktrees under `../ASM-worktrees/` retain commits absent from
+  `main`. Preserve their branches and files until changes and session ownership
+  have been reviewed. Missing ancestry does not prove patches are still needed;
+  compare their behavior with current code before merging or discarding anything.
+
+| Worktree / branch | Commits absent from main | Other observed content |
+| --- | --- | --- |
+| `issue-1` / `fix/issue-1` | `bc7a75a` | No reported tracked changes |
+| `issue-11` / `fix/issue-11` | `471d0ed` | Untracked `attack_surface_monitor.egg-info/` and `build/` |
+| `issue-2` / `fix/issue-2` | `a5c9389` | No reported tracked changes |
+| `issue-3` / `fix/issue-3` | `9a85b2e` | No reported tracked changes |
+| `issue-4` / `fix/issue-4` | `e386b4a`, `9a85b2e` | No reported tracked changes |
+| `issue-5` / `fix/issue-5` | `c8e4f6f` | No reported tracked changes |
+
+Git also reported unreadable pytest-cache directories in these worktrees, so the
+absence of other reported changes is not a complete inventory of untracked files.
+Detailed local inspection is retained in `out/release/cleanup-worktree-audit.json`.
+
+Automatic approval review rejected a guarded attempt to remove only Python bytecode
+cache directories in the main checkout, with `blocked by policy`. The command did
+not execute; no caches or worktrees were removed in this cleanup pass. Do not retry
+these deletions through another mechanism. Earlier setup/build-directory cleanup
+blocks also remain. Use the existing manual cleanup script only in an appropriately
+authorized user environment; it preserves pre-existing workspaces and final evidence.
+
 ## Next session - ordered priorities
 
 The user requested saving this backlog after release. Resume from this checkpoint;
