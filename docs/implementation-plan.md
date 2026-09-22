@@ -5,6 +5,77 @@ lab for GenAI application red teaming. Research question: can an AI security
 analyst process attacker-controlled findings without leaking data, changing
 evidence, or abusing tools?
 
+## Latest checkpoint - September 22, 2026
+
+- Public [v0.3.0 release](https://github.com/travisbowen/Attack-Surface-Monitor/releases/tag/v0.3.0)
+  published from `3a21fb90509c2c223fb23151b12c0a817869404b`, with MIT licensing,
+  wheel/source archives, checksums, terminal demonstration, transcript, dashboard,
+  and CI evidence. All nine uploaded assets and the tag target were verified.
+- [Final hosted CI](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35759166291)
+  passed all five jobs. Each Linux/Windows Python 3.11/3.12 job passed 338 tests
+  with five optional skips, 75 extracted-source checks, both archived studies,
+  and installed-wheel verification. PyRIT passed 160 scoped tests and its demo.
+- Separate [native repeat study](../research/native-runtime-repeats/README.md):
+  12 valid trials, 60 original replies, 12 legitimate successes, six successful
+  controls, zero of six attack objectives achieved (zero of three per variant).
+  No measured defense advantage. Two pre-dispatch scheduling delays were retained;
+  no invalid trials, replacement targets, or model-reply retries.
+- Preserve the original eight-exposure pilot and blocked Codex CLI attempt as
+  separate evidence sets. Do not pool their methods or denominators with repeats.
+- Application source remains frozen at `cf7b595`. New source companions and
+  verifier fixes do not alter the archived experiments or original reply bytes.
+- Browser verification and policy-blocked cleanup remain unfinished. All owned
+  task processes and workers finished; no new worktrees or environments remain.
+  User-owned untracked `asm_lite/requirements.txt` stays untouched and unpublished.
+
+## Next session - ordered priorities
+
+The user requested saving this backlog after release. Resume from this checkpoint;
+do not rebuild completed features or rerun live studies merely to recover context.
+
+1. **Restore browser verification.** Use the Orca skill and version-matched CLI
+   guide, then check runtime status. Latest read-only check: app PID 53008 running,
+   runtime `starting`, unreachable, runtime ID null. Once reachable, verify the
+   dashboard's actual rendering, filters, comparisons, keyboard access, and mobile
+   layout; retain screenshots and observations. Earlier Edge launch returned
+   `EPERM`; do not bypass policy or restart the user's app without appropriate
+   authorization. Close only task-created browser tabs, servers, and terminals.
+2. **Finish cleanup when permitted.** Review
+   [cleanup script](../scripts/cleanup-task-setup.ps1) and exact leftovers in
+   [verification history](lab-verification.md). Automatic approval review rejected
+   deletion with `blocked by policy`; do not retry through another mechanism or
+   change ACLs. Manual cleanup must preserve source, user-owned workspaces/files,
+   unique commits, and final evidence. Existing issue worktrees are not disposable
+   task resources. The script supports inspection with `-WhatIf`.
+3. **Broaden live evaluation coverage.** Existing offline campaigns already cover
+   retrieval, tool metadata, and multistep attacks. Exercise those with fresh,
+   bounded runtime/model trials and matched controls. Preregister schedules,
+   budgets, stopping rules, and denominators; retain errors and unknown outcomes.
+4. **Measure actual defense benefit.** Develop stronger or adaptive attacks within
+   the synthetic lab, establish reproducible vulnerable-target failures, and
+   compare defended behavior and legitimate task success on identical tasks.
+   Separate attack development from held-out evaluation. Do not cherry-pick
+   attempts or count infrastructure failures as defense wins. Current fixed
+   memory payload failed against both variants, so it shows no incremental benefit.
+5. **Compare configured models.** Use existing experiment tooling with explicit
+   endpoints, model/version identifiers, sampling settings, repeat counts, usage,
+   and budgets. Provider configuration and hosted spending authorization are still
+   required. Keep secrets in the supported local credential configuration, never
+   chat or committed files. Preserve runtime and direct-provider provenance.
+6. **Prepare hiring material.** Turn verified findings into a concise interview
+   walkthrough and resume bullets: trust boundaries, controls, actual effects,
+   failed attacks, limitations, and reproducible evidence. Reuse the published
+   demo and existing case studies; do not imply production or broad model security.
+
+Items 1-2 close release limitations; items 3-6 are the proposed next research and
+portfolio phase, not missing core-release implementation. Hosted multi-user
+infrastructure is optional and lower priority than credible research evidence.
+
+For independent priority work, honor the user's preference for GPT-6 Astra agents
+with the primary agent coordinating. Each worker tracks and stops its own
+resources; avoid creating unnecessary terminals, environments, or worktrees.
+Update this memory and the verification record after meaningful checkpoints.
+
 ## Scope
 
 Preserve `asm_lite`; import its JSON outputs through a separate `ai_triage_lab`
