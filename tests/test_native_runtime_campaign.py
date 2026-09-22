@@ -220,3 +220,79 @@ def test_public_manifest_rejects_inventory_or_byte_changes(prepared, monkeypatch
     result = verifier.verify(root, plan_hash)
     assert not result["valid"]
     assert any("manifest" in failure for failure in result["failures"])
+
+
+def set_simulated_platform(monkeypatch, convention):
+    from ai_triage_lab import external_agent, runner
+    value = verifier._pilot._implementation_hashes()[convention]
+    for module in (campaign, verifier._pilot, external_agent, runner):
+        monkeypatch.setattr(module, "implementation_hash", lambda: value)
+    return value
+
+
+@pytest.mark.parametrize("archived", ["windows", "posix"])
+@pytest.mark.parametrize("native", ["windows", "posix"])
+def test_terminal_archive_cross_platform_events_unchanged(tmp_path, monkeypatch, archived, native):
+    set_simulated_platform(monkeypatch, archived)
+    root = tmp_path / "explicit-offline-terminal-fixture"
+    invoke(monkeypatch, root, "init")
+    invoke(monkeypatch, root, "start", 0)
+    directory = root / "native-repeat-01"
+    for index in range(2):
+        turn = directory / "turns" / f"{index:03d}"
+        request = read(turn / "request.json")
+        (turn / "response.bin").write_bytes(b'{"tool_calls":[],"final":"offline terminal fixture"}')
+        campaign.write(turn / "receipt.json", {"request_hash": request["request_hash"]})
+        invoke(monkeypatch, root, "submit", 0)
+    assert read(root / "ledger.json")[0]["status"] == "completed"
+    original = {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+    set_simulated_platform(monkeypatch, native)
+    report = verifier.verify(root, campaign.digest(root / "preregistration.json"))
+    assert report["valid"], report["failures"]
+    assert {path.relative_to(root): path.read_bytes() for path in root.rglob("*") if path.is_file()} == original
+
+
+@pytest.mark.parametrize("native", ["windows", "posix"])
+def test_complete_public_archive_cross_platform(monkeypatch, native):
+    root = SCRIPT.parents[1] / "research/native-runtime-repeats"
+    original_manifest = (root / "manifest.json").read_bytes()
+    set_simulated_platform(monkeypatch, native)
+    report = verifier.verify(root, "ac87b511c0aa524415eaca88d0d325c16259b74dfa025833fa76b6fe08106e29", require_complete=True)
+    assert report["valid"], report["failures"]
+    assert report["statuses"] == {"completed": 12}
+    assert sum(row["accepted_replies"] for row in report["checked"]) == 60
+    assert (root / "manifest.json").read_bytes() == original_manifest
+
+
+@pytest.mark.parametrize("tamper", ["unknown_hash", "other_valid_hash", "prompt_hash", "nested_hash", "tool_effect", "top_level_hash"])
+def test_terminal_semantics_reject_tamper_even_with_rehashed_chain(prepared, monkeypatch, tamper):
+    root, directory, turn = prepared
+    (turn / "response.bin").write_bytes(b"malformed offline terminal fixture")
+    invoke(monkeypatch, root, "submit", 0)
+    result_path = next((directory / "trials").glob("*/result.json"))
+    saved = read(result_path)
+    config = next(event for event in saved["events"] if event["kind"] == "configuration")
+    if tamper == "unknown_hash":
+        config["data"]["implementation_hash"] = "0" * 64
+    elif tamper == "other_valid_hash":
+        config["data"]["implementation_hash"] = next(value for value in verifier._pilot._implementation_hashes().values() if value != saved["implementation_hash"])
+    elif tamper == "prompt_hash":
+        config["data"]["prompt_hash"] = "0" * 64
+    elif tamper == "nested_hash":
+        config["data"]["adapter"]["implementation_hash"] = "injected nested value"
+    elif tamper == "tool_effect":
+        saved["events"][-1]["data"]["final_state"]["injected"] = True
+    else:
+        saved["implementation_hash"] = "0" * 64
+    previous = None
+    for event in saved["events"]:
+        event["previous_hash"] = previous
+        event["hash"] = verifier.canonical_hash({k: v for k, v in event.items() if k != "hash"})
+        previous = event["hash"]
+    saved["evidence_head"] = previous
+    campaign.write(result_path, saved)
+    (result_path.parent / "events.jsonl").write_text("".join(json.dumps(event) + "\n" for event in saved["events"]), encoding="utf-8")
+    assert verifier.verify_chain(saved["events"])
+    report = verifier.verify(root, campaign.digest(root / "preregistration.json"))
+    assert not report["valid"]
+    assert any("implementation" in failure.lower() or "event semantics" in failure for failure in report["failures"])

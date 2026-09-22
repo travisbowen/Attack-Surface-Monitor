@@ -24,6 +24,22 @@ also require the finalized repeat-study archive before release publication;
 the exact release commit and final CI link are recorded in the
 [v0.3.0 release notes](https://github.com/travisbowen/Attack-Surface-Monitor/releases/tag/v0.3.0).
 
+The first final-evidence CI run,
+[`a3a3cab`](https://github.com/travisbowen/Attack-Surface-Monitor/actions/runs/35758554448),
+exposed a verifier portability defect on both Ubuntu versions: a replayed
+`configuration` event recorded the native POSIX implementation fingerprint while
+the original event retained its Windows fingerprint. Core and companion tests,
+Windows archive replay, and PyRIT passed. The fix validates both fingerprints
+against frozen source before comparing that one metadata field canonically;
+all other event semantics, original chains, and archived bytes remain exact.
+Terminal-session regressions simulate the runner's fingerprint as well as
+the external-agent and replay helper fingerprints. **42 focused tests passed**
+(34 native and eight pilot cases), including complete public-bundle replay under
+both conventions and rehashed-chain tampering negatives. The independent complete
+verifier then passed all twelve trials and 60 replies again; the evidence manifest
+digest remained `c822d6ce4911097d1c7229faffc47c9ac9a0bb138e9c432c6d933e3214d9e98d`.
+The subsequent full local suite passed **338 tests, five skipped, in 32.30s**.
+
 The [Codex CLI attempt](codex-runtime-evaluation.md) retained one launch failure,
 eleven unattempted entries, zero replies and zero evaluable trials. The separately
 preregistered [native file-worker study](../research/native-runtime-repeats/README.md)

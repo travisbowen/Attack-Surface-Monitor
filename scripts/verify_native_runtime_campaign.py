@@ -41,6 +41,29 @@ def source_digest_matches(path, expected):
     return expected in {digest(raw), digest(lf), digest(lf.replace(b"\n", b"\r\n"))}
 
 
+def event_semantics(events, expected_implementation_hash):
+    """Normalize only the validated configuration fingerprint for comparison.
+
+    Saved chains are verified separately before this read-only projection. No
+    arbitrary hashes, nested values, event kinds, or application data are erased.
+    """
+    if expected_implementation_hash not in _pilot._implementation_hashes().values():
+        raise ValueError("Event implementation hash does not match frozen source")
+    semantics = []
+    configurations = 0
+    for event in events:
+        data = copy.deepcopy(event["data"])
+        if event["kind"] == "configuration":
+            configurations += 1
+            if data.get("implementation_hash") != expected_implementation_hash:
+                raise ValueError("Configuration implementation hash differs from its session/replay")
+            data["implementation_hash"] = "validated-platform-equivalent-source"
+        semantics.append((event["kind"], data))
+    if configurations != 1:
+        raise ValueError("Expected exactly one configuration event")
+    return semantics
+
+
 def verify(root: Path, expected_plan_hash: str, require_complete=False):
     failures, checked, statuses = [], [], {}
 
@@ -143,12 +166,18 @@ def verify(root: Path, expected_plan_hash: str, require_complete=False):
             for path in paths:
                 saved = read(path)
                 check(saved["trial_id"] == session["session_id"], f"{key}: saved trial identity")
+                check(saved.get("implementation_hash") == session["implementation_hash"], f"{key}: saved implementation identity")
                 for field in ("scenario_id", "scenario_hash", "scenario", "control", "variant", "adapter", "execution", "initial_state", "final_state", "evaluation"):
                     check(canonical_hash(saved.get(field)) == canonical_hash(result.get(field)), f"{key}: saved {field} differs from replay")
                 events = saved["events"]
                 check(verify_chain(events), f"{key}: saved evidence chain invalid")
                 check(events[-1]["hash"] == saved["evidence_head"], f"{key}: evidence head differs")
-                check([(e["kind"], e["data"]) for e in events] == [(e["kind"], e["data"]) for e in result["events"]], f"{key}: saved event semantics differ")
+                try:
+                    saved_semantics = event_semantics(events, session["implementation_hash"])
+                    replay_semantics = event_semantics(result["events"], _pilot.implementation_hash())
+                    check(saved_semantics == replay_semantics, f"{key}: saved event semantics differ")
+                except ValueError as exc:
+                    check(False, f"{key}: {exc}")
                 jsonl = path.parent / "events.jsonl"
                 check([json.loads(line) for line in jsonl.read_text().splitlines()] == events, f"{key}: JSONL differs")
         check(session_path.read_bytes() == session_bytes, f"{key}: session changed during audit; rerun after writer finishes")
