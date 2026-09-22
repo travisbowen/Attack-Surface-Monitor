@@ -7,6 +7,8 @@ name = "asm-ai-triage-lab"
 version = "0.3.0"
 description = "Bounded attack-surface observation and synthetic AI security triage evaluation"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = ["httpx>=0.27,<1.0", "jinja2>=3.1,<4.0"]
 

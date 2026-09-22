@@ -3,6 +3,9 @@
 Current source version: **0.3.0**. Earlier 0.2.0 verification remains historical;
 release artifacts and empirical evidence are recorded separately.
 
+Licensed under [MIT](LICENSE). Public release and CI details are in the
+[release guide](docs/public-release.md).
+
 A Python portfolio project connecting bounded HTTP exposure observations to a
 synthetic GenAI security evaluation lab. The scanner collects evidence; the lab
 tests what happens when an AI analyst consumes attacker-controlled evidence and

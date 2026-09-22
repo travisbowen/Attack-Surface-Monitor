@@ -11,6 +11,42 @@ without treating their instructions as authority? Show one unauthorized action,
 the host control that blocks it, and a benign task that still succeeds. Then
 separate what scripted tests prove from what the small live pilot observed.
 
+## Short recorded terminal demo
+
+From the source checkout, use the standard-library recorder with the installed
+project's Python interpreter:
+
+```bash
+python scripts/record_portfolio_demo.py --out out/public-demo
+```
+
+Choose a new output directory each time. The recorder executes three actual
+offline CLI trials: unauthorized closure against vulnerable and defended hosts,
+then normal authorized workflow against the defended host. It displays actual
+tool receipts, ticket state, and outcomes from the newly saved results, then
+executes the archived pilot verifier. No provider or browser is used.
+
+`portfolio-demo.cast` is an asciicast v2 terminal recording, captured from timed
+process stdout/stderr pipes. It is **not browser video or a PTY screen capture**.
+Recorder labels identify command headings and exit codes; the displayed `python`
+alias means the interpreter running the recorder. Worker output summarizes saved
+CLI artifacts; complete underlying CLI stdout is retained in `*-cli.txt` files.
+Raw captured worker/verifier output is retained in `command-*-stdout.bin`.
+Newlines alone are normalized to CRLF for terminal playback. Eight-second reading
+pauses are real elapsed time, not altered timestamps; `--pause 0` removes them.
+
+Play the recording with an existing asciinema-compatible player, for example
+`asciinema play out/public-demo/portfolio-demo.cast`, or read `transcript.txt`
+without installing anything. `recording.json` retains command exit codes and
+measured timings. The output also contains each generated report and independent
+trial evidence. The recording is normally under one minute with default pauses.
+No renderer, player, or browser is installed or started by the recorder.
+
+The September 22, 2026 recording and its transcript are preserved locally under
+`out/public-demo-20260922/` for release attachment. It demonstrates scripted host
+behavior and verifies existing pilot evidence; it creates no new model research
+and does not resolve the outstanding browser-verification limitation.
+
 ## 1. Generate the comparison
 
 ```bash

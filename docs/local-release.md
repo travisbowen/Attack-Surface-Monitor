@@ -1,8 +1,8 @@
 # Build and verify a local release
 
 Distribution: `asm-ai-triage-lab` 0.3.0, Python 3.11+. This guide builds local
-artifacts; it does not publish a package. No software license is declared in the
-repository; choose appropriate licensing before public package distribution.
+artifacts; it does not publish a package. The project uses the
+[MIT License](../LICENSE), included in both wheel and source distributions.
 Release history is in [CHANGELOG.md](../CHANGELOG.md). Application source remains
 frozen at `cf7b595`; later transport, verifier, documentation, and evidence work
 belongs to the same 0.3.0 release.
